@@ -35,12 +35,12 @@ public class SecurityConfig {
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(registry -> {
                     registry.requestMatchers("/home", "/register", "/login").permitAll();
-                    //registry.requestMatchers("/v1/admin/**").hasRole("admin");
-                    registry.requestMatchers("/v1/admin/**").permitAll();
-                    registry.requestMatchers("/v1/users/**").hasRole("user");
-                    registry.requestMatchers("/api/v1/cartitem").hasRole("user");
-                    registry.requestMatchers("/api/v1/product").hasRole("user");
-                    registry.requestMatchers("/api/v1/product/admin").hasRole("admin");
+                    registry.requestMatchers("/v1/admin/**").hasRole("admin");
+//                    registry.requestMatchers("/v1/admin/**").permitAll();
+//                    registry.requestMatchers("/v1/users/**").hasRole("user");
+//                    registry.requestMatchers("/api/v1/cartitem").hasRole("user");
+//                    registry.requestMatchers("/api/v1/product").hasRole("user");
+//                    registry.requestMatchers("/api/v1/product/admin").hasRole("admin");
                     registry.anyRequest().authenticated();
                 })
                 .authenticationProvider(authenticationProvider())

@@ -1,6 +1,7 @@
 package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.UserCreationBean;
+import com.example.LearningManagementSystem.bean.UserLoginBean;
 import com.example.LearningManagementSystem.bean.UserResponse;
 import com.example.LearningManagementSystem.entity.Role;
 import com.example.LearningManagementSystem.entity.User;
@@ -11,11 +12,18 @@ import com.example.LearningManagementSystem.repository.RoleRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
 import com.example.LearningManagementSystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -29,6 +37,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserProfileRepository userProfileRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtService jwtService;
 
     @Override
     public UserResponse createUser(UserCreationBean userCreationBean) throws Exception {
@@ -54,6 +71,21 @@ public class UserServiceImpl implements UserService {
         return userResponse;
     }
 
+    @Override
+    public Map<String, String> userLogin(UserLoginBean userLoginBean, HttpHeaders httpHeaders) {
+        Map<String, String> tokenMap = new HashMap<>();
+        Authentication authentication =  authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginBean.getUsername(),userLoginBean.getPassword())
+        );
+
+        if(authentication.isAuthenticated())
+        {
+            String token = jwtService.generateToken(userLoginBean.getUsername());
+            tokenMap.put("token",token );
+        }
+        return tokenMap;
+    }
+
     private void saveUserprofile(UserCreationBean userCreationBean, User user) {
         UserProfile userProfile = new UserProfile();
         userProfile.setFirstname(userCreationBean.getFirstname());
@@ -69,7 +101,7 @@ public class UserServiceImpl implements UserService {
     private User saveUser(UserCreationBean userCreationBean) {
         User user = new User();
         user.setUsername(userCreationBean.getUsername());
-        user.setPassword(userCreationBean.getPassword());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role role = roleRepository.findByRolename(userCreationBean.getRoleCode());
         user.setRolekey(role.getId());
         user = userRepository.save(user);
@@ -95,4 +127,6 @@ public class UserServiceImpl implements UserService {
         }
         return optionalRole.get().getRolename().split(",");
     }
+
+
 }
