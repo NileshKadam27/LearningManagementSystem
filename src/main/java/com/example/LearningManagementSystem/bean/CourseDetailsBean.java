@@ -6,7 +6,7 @@ public class CourseDetailsBean {
 
     private String courseCategory;
 
-    private List<CourseDetailsBean> courseDetailList;
+    private List<CourseBean> courseDetailList;
 
     public String getCourseCategory() {
         return courseCategory;
@@ -16,7 +16,7 @@ public class CourseDetailsBean {
         this.courseCategory = courseCategory;
     }
 
-    public List<CourseDetailsBean> getCourseDetailList() {
+    public List<CourseBean> getCourseDetailList() {
         return courseDetailList;
     }
 

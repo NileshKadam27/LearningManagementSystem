@@ -8,4 +8,5 @@ import com.example.LearningManagementSystem.entity.Role;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
+    Role findByRolename(String rolename);
 }
