@@ -38,6 +38,11 @@ public class CourseController {
     
     @PostMapping("/v1/user/professor/course/register")
     public ResponseEntity<Object> uploadVideoDetails(@RequestBody VideoDetailsBean videoDetailsBean){
-        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCourseDetailsById(courseid), HttpStatus.OK);
+        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(videoDetailsBean), HttpStatus.OK);
+    }
+    
+    @PostMapping("/v1/user/professor/course/register/{courseKey}")
+    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey, @RequestBody VideoDetailsBean videoDetailsBean){
+        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoDetailsBean), HttpStatus.OK);
     }
 }

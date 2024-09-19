@@ -154,36 +154,15 @@ public class CourseServiceImpl implements CourseService {
 			// get userkey from header
 			Long userKey = 1L;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
-			CourseCategory courseCategory = courseCategoryRepository
-					.findByCategoryname(videoDetailsBean.getCourseCategory());
-
-			Course course = new Course();
-			if (courseCategory != null) {
-				course.setCoursecategorykey(courseCategory.getId());
-			}
-			CourseBean courseBean = videoDetailsBean.getCourseBean();
-			course.setCoursedescription(
-					courseBean.getCoursedescription() != null ? courseBean.getCoursedescription() : null);
-			course.setCoursename(courseBean.getCourseName() != null ? courseBean.getCourseName() : null);
-			course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
-			Course courseFromDB = courseRepository.save(course);
-
+			Course course = courseDetails(videoDetailsBean, userProfile);
 			videoDetailsResponse.setCourseCategory(videoDetailsBean.getCourseCategory());
-			videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB, userProfile));
+			videoDetailsResponse.setCourseBean(mapCourseData(course, userProfile));
 
 			// link generation logic s3
 			String url = "link";
 
-			VideoDetails videoDetails = new VideoDetails();
-			videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
-			videoDetails.setVideoLink(url);
-			VideoBean videoBean = videoDetailsBean.getVideoBean();
-			videoDetails.setVideoTitle(videoBean.getVideoTitle());
-			videoDetails.setVideoDuration(videoBean.getVideoDuration());
-			videoDetails.setCourseId(courseFromDB.getId() != null ? courseFromDB.getId() : null);
-
-			VideoDetails videoDets = videoDetailsRepository.save(videoDetails);
-			videoDetailsResponse.setVideoBean(mapVideoData(videoDets));
+			VideoDetails videoDetails = mongoDetails(userKey, videoDetailsBean.getVideoBean(), url, userProfile);
+			videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
 
 		} catch (Exception ex) {
 			ex.getMessage();
@@ -191,23 +170,123 @@ public class CourseServiceImpl implements CourseService {
 		return videoDetailsResponse;
 	}
 
+	@Override
+	public VideoDetailsBean updateVideoDetails(Long courseKey, VideoDetailsBean videoDetailsBean) {
+		VideoDetailsBean videoDetailsResponse = new VideoDetailsBean();
+		try {
+			Optional<Course> course = courseRepository.findById(courseKey);
+			if (course.isPresent()) {
+				if (videoDetailsBean != null) {
+					Course courseFromDB = courseDetails(course.get(), videoDetailsBean);
+					videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB));
+					if (videoDetailsBean.getVideoBean() != null) {
+						VideoDetails videoDetails = mongoDetails(courseKey, videoDetailsBean.getVideoBean());
+						videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
+					}
+				}
+			} else {
+				throw new EntityDataNotFound("Course not found for given courseKey");
+			}
+
+		} catch (Exception ex) {
+			ex.getMessage();
+		}
+		return videoDetailsResponse;
+	}
+
+	private VideoDetails mongoDetails(Long courseKey, VideoBean videoBean, String url, UserProfile userProfile) {
+		VideoDetails videoDetails = new VideoDetails();
+		videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
+		videoDetails.setVideoLink(url);
+		videoDetails.setVideoTitle(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
+		videoDetails.setVideoDuration(videoBean.getVideoDuration() != null ? videoBean.getVideoTitle() : null);
+		videoDetails.setCourseId(courseKey);
+		return videoDetailsRepository.save(videoDetails);
+	}
+
+	private VideoDetails mongoDetails(Long courseKey, VideoBean videoBean) {
+		VideoDetails videoDetails = videoDetailsRepository.findByCourseId(courseKey);
+		if (videoDetails != null) {
+			if (videoBean.getVideoLink() != null)
+				videoDetails.setVideoDuration(videoBean.getVideoLink());
+		}
+		if (videoBean.getVideoTitle() != null) {
+			videoDetails.setVideoTitle(videoBean.getVideoTitle());
+		}
+		return videoDetailsRepository.save(videoDetails);
+	}
+
+	private Course courseDetails(Course course, VideoDetailsBean videoDetailsBean) {
+		if (videoDetailsBean.getCourseCategory() != null) {
+			CourseCategory courseCategory = courseCategoryRepository
+					.findByCategoryname(videoDetailsBean.getCourseCategory());
+			Long courseCategoryKey = courseCategory.getId() != null ? courseCategory.getId() : null;
+			if (courseCategoryKey != null) {
+				course.setCoursecategorykey(courseCategoryKey);
+			}
+		}
+		if (videoDetailsBean.getCourseBean() != null) {
+			course.setCoursedescription(videoDetailsBean.getCourseBean().getCoursedescription() != null
+					? videoDetailsBean.getCourseBean().getCoursedescription()
+					: course.getCoursedescription());
+			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
+				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
+			}
+		}
+		return courseRepository.save(course);
+	}
+
+	private Course courseDetails(VideoDetailsBean videoDetailsBean, UserProfile userProfile) {
+		Course course = new Course();
+		course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
+
+		if (videoDetailsBean.getCourseCategory() != null) {
+			CourseCategory courseCategory = courseCategoryRepository
+					.findByCategoryname(videoDetailsBean.getCourseCategory());
+			Long courseCategoryKey = courseCategory.getId() != null ? courseCategory.getId() : null;
+			if (courseCategoryKey != null) {
+				course.setCoursecategorykey(courseCategoryKey);
+			}
+		}
+		if (videoDetailsBean.getCourseBean() != null) {
+			course.setCoursedescription(videoDetailsBean.getCourseBean().getCoursedescription() != null
+					? videoDetailsBean.getCourseBean().getCoursedescription()
+					: course.getCoursedescription());
+			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
+				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
+			}
+		}
+		return courseRepository.save(course);
+	}
+
 	private CourseBean mapCourseData(Course course, UserProfile userProfile) {
 		CourseBean courseBean = new CourseBean();
 		courseBean.setCoursedescription(course.getCoursedescription());
 		courseBean.setCourseName(course.getCoursename());
-		courseBean.setExperience(userProfile.getExperience());
-		courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+		if (userProfile != null) {
+			courseBean.setExperience(userProfile.getExperience());
+			courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+		}
 		courseBean.setCourseId(course.getId());
 		return courseBean;
 	}
 
-	private VideoBean mapVideoData(VideoDetails videoDets) {
+	private VideoBean mapMongoData(VideoDetails videoDets) {
 		VideoBean videoBean = new VideoBean();
 		videoBean.setVideoDuration(videoDets.getVideoDuration());
 		videoBean.setVideoLink(videoDets.getVideoLink());
 		videoBean.setVideoTitle(videoDets.getVideoTitle());
 		return videoBean;
 	}
+
+	private CourseBean mapCourseData(Course course) {
+		CourseBean courseBean = new CourseBean();
+		courseBean.setCoursedescription(course.getCoursedescription());
+		courseBean.setCourseName(course.getCoursename());
+		courseBean.setCourseId(course.getId());
+		return courseBean;
+	}
+
 	
 	
 }
