@@ -3,14 +3,17 @@ package com.example.LearningManagementSystem.bean;
 import java.io.File;
 
 public class VideoBean {
-	
+
 	private String videoLink;
-	
+
 	private String videoTitle;
-	
+
 	private String videoDuration;
-	
+
 	private File videoFile;
+
+	private Long profKey;
+	
 
 	public String getVideoLink() {
 		return videoLink;
@@ -42,6 +45,14 @@ public class VideoBean {
 
 	public void setVideoFile(File videoFile) {
 		this.videoFile = videoFile;
+	}
+
+	public Long getProfKey() {
+		return profKey;
+	}
+
+	public void setProfKey(Long profKey) {
+		this.profKey = profKey;
 	}
 
 }

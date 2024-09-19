@@ -2,13 +2,18 @@ package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
+import com.example.LearningManagementSystem.bean.VideoBean;
+import com.example.LearningManagementSystem.bean.VideoDetailsBean;
 import com.example.LearningManagementSystem.entity.Course;
 import com.example.LearningManagementSystem.entity.CourseCategory;
 import com.example.LearningManagementSystem.entity.UserProfile;
+import com.example.LearningManagementSystem.entity.VideoDetails;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.repository.CourseCategoryRepository;
 import com.example.LearningManagementSystem.repository.CourseRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
+import com.example.LearningManagementSystem.repository.VideoDetailsRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +34,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Autowired
     private UserProfileRepository userProfileRepository;
+    
+    @Autowired
+    private VideoDetailsRepository videoDetailsRepository;
 
     @Override
     public List<CourseDetailsBean> getAllCourseDetails() {
@@ -138,6 +146,70 @@ public class CourseServiceImpl implements CourseService {
             throw new EntityDataNotFound("User doesn't exist");
         }
     }
+
+	@Override
+	public VideoDetailsBean uploadVideoDetails(VideoDetailsBean videoDetailsBean) {
+		VideoDetailsBean videoDetailsResponse = new VideoDetailsBean();
+		try {
+			// get userkey from header
+			Long userKey = 1L;
+			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
+			CourseCategory courseCategory = courseCategoryRepository
+					.findByCategoryname(videoDetailsBean.getCourseCategory());
+
+			Course course = new Course();
+			if (courseCategory != null) {
+				course.setCoursecategorykey(courseCategory.getId());
+			}
+			CourseBean courseBean = videoDetailsBean.getCourseBean();
+			course.setCoursedescription(
+					courseBean.getCoursedescription() != null ? courseBean.getCoursedescription() : null);
+			course.setCoursename(courseBean.getCourseName() != null ? courseBean.getCourseName() : null);
+			course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
+			Course courseFromDB = courseRepository.save(course);
+
+			videoDetailsResponse.setCourseCategory(videoDetailsBean.getCourseCategory());
+			videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB, userProfile));
+
+			// link generation logic s3
+			String url = "link";
+
+			VideoDetails videoDetails = new VideoDetails();
+			videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
+			videoDetails.setVideoLink(url);
+			VideoBean videoBean = videoDetailsBean.getVideoBean();
+			videoDetails.setVideoTitle(videoBean.getVideoTitle());
+			videoDetails.setVideoDuration(videoBean.getVideoDuration());
+			videoDetails.setCourseId(courseFromDB.getId() != null ? courseFromDB.getId() : null);
+
+			VideoDetails videoDets = videoDetailsRepository.save(videoDetails);
+			videoDetailsResponse.setVideoBean(mapVideoData(videoDets));
+
+		} catch (Exception ex) {
+			ex.getMessage();
+		}
+		return videoDetailsResponse;
+	}
+
+	private CourseBean mapCourseData(Course course, UserProfile userProfile) {
+		CourseBean courseBean = new CourseBean();
+		courseBean.setCoursedescription(course.getCoursedescription());
+		courseBean.setCourseName(course.getCoursename());
+		courseBean.setExperience(userProfile.getExperience());
+		courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+		courseBean.setCourseId(course.getId());
+		return courseBean;
+	}
+
+	private VideoBean mapVideoData(VideoDetails videoDets) {
+		VideoBean videoBean = new VideoBean();
+		videoBean.setVideoDuration(videoDets.getVideoDuration());
+		videoBean.setVideoLink(videoDets.getVideoLink());
+		videoBean.setVideoTitle(videoDets.getVideoTitle());
+		return videoBean;
+	}
+	
+	
 }
 
 

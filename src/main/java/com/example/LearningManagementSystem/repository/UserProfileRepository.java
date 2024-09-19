@@ -7,5 +7,9 @@ import com.example.LearningManagementSystem.entity.UserProfile;
 
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
+	
+	UserProfile findByUserkey(Long userKey);
+	
+	
 
 }
