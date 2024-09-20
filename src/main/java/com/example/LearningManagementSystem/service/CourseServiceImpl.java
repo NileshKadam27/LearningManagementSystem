@@ -14,10 +14,20 @@ import com.example.LearningManagementSystem.repository.CourseRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
 import com.example.LearningManagementSystem.repository.VideoDetailsRepository;
 
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +35,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
+	
+	
 
     @Autowired
     private CourseRepository courseRepository;
@@ -37,6 +49,16 @@ public class CourseServiceImpl implements CourseService {
     
     @Autowired
     private VideoDetailsRepository videoDetailsRepository;
+    
+    private  S3Client s3Client;
+    
+    @Value("${aws.s3.bucketName}")
+	private String bucketName;
+    
+    
+    @Value("${s3.video.link:false}")
+  	private Boolean s3Link;
+    
 
     @Override
     public List<CourseDetailsBean> getAllCourseDetails() {
@@ -156,11 +178,17 @@ public class CourseServiceImpl implements CourseService {
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Course course = courseDetails(videoDetailsBean, userProfile);
 			videoDetailsResponse.setCourseCategory(videoDetailsBean.getCourseCategory());
+			//save course data to DB
 			videoDetailsResponse.setCourseBean(mapCourseData(course, userProfile));
 
 			// link generation logic s3
-			String url = "link";
-
+			String url = null;
+			if (s3Link) {
+				if (videoDetailsBean.getVideoBean() != null) {
+					url = uploadVideo(videoDetailsBean.getVideoBean().getVideoFile());
+				}
+			}
+			//save video data to mongo
 			VideoDetails videoDetails = mongoDetails(userKey, videoDetailsBean.getVideoBean(), url, userProfile);
 			videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
 
@@ -168,6 +196,20 @@ public class CourseServiceImpl implements CourseService {
 			ex.getMessage();
 		}
 		return videoDetailsResponse;
+	}
+
+	private String uploadVideo(MultipartFile file) throws IOException {
+		String fileName = file.getOriginalFilename();
+		s3Client.putObject(
+				PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(file.getContentType()).build(),
+				RequestBody.fromBytes(file.getBytes()));
+
+		return getVideoLink(bucketName, fileName);
+	}
+
+	private String getVideoLink(String bcktName, String fileName) {
+		String url = "https://" + bcktName + ".s3.amazonaws.com/" + fileName;
+		return url;
 	}
 
 	@Override
@@ -285,9 +327,7 @@ public class CourseServiceImpl implements CourseService {
 		courseBean.setCourseName(course.getCoursename());
 		courseBean.setCourseId(course.getId());
 		return courseBean;
-	}
-
-	
+	}	
 	
 }
 

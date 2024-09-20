@@ -2,6 +2,8 @@ package com.example.LearningManagementSystem.bean;
 
 import java.io.File;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class VideoBean {
 
 	private String videoLink;
@@ -10,10 +12,9 @@ public class VideoBean {
 
 	private String videoDuration;
 
-	private File videoFile;
+	private MultipartFile videoFile;
 
 	private Long profKey;
-	
 
 	public String getVideoLink() {
 		return videoLink;
@@ -39,11 +40,11 @@ public class VideoBean {
 		this.videoDuration = videoDuration;
 	}
 
-	public File getVideoFile() {
+	public MultipartFile getVideoFile() {
 		return videoFile;
 	}
 
-	public void setVideoFile(File videoFile) {
+	public void setVideoFile(MultipartFile videoFile) {
 		this.videoFile = videoFile;
 	}
 
