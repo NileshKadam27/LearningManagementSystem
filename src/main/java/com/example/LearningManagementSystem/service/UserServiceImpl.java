@@ -41,11 +41,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    JwtService jwtService;
 
     @Override
     public UserResponse createUser(UserCreationBean userCreationBean) throws Exception {
@@ -71,21 +66,6 @@ public class UserServiceImpl implements UserService {
         return userResponse;
     }
 
-    @Override
-    public Map<String, String> userLogin(UserLoginBean userLoginBean, HttpHeaders httpHeaders) {
-        Map<String, String> tokenMap = new HashMap<>();
-        Authentication authentication =  authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userLoginBean.getUsername(),userLoginBean.getPassword())
-        );
-
-        if(authentication.isAuthenticated())
-        {
-            String token = jwtService.generateToken(userLoginBean.getUsername());
-            tokenMap.put("token",token );
-        }
-        return tokenMap;
-    }
-
     private void saveUserprofile(UserCreationBean userCreationBean, User user) {
         UserProfile userProfile = new UserProfile();
         userProfile.setFirstname(userCreationBean.getFirstname());
@@ -101,7 +81,7 @@ public class UserServiceImpl implements UserService {
     private User saveUser(UserCreationBean userCreationBean) {
         User user = new User();
         user.setUsername(userCreationBean.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(userCreationBean.getPassword()));
         Role role = roleRepository.findByRolename(userCreationBean.getRoleCode());
         user.setRolekey(role.getId());
         user = userRepository.save(user);

@@ -3,12 +3,12 @@ package com.example.LearningManagementSystem.controller;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
@@ -17,6 +17,9 @@ public class CourseController {
     @Autowired
     CourseService courseService;
 
+    //@Secured(value = { "ROLE_admin"})
+
+    @PreAuthorize("hasRole('ROLE_student')")
     @GetMapping("/v1/course/details")
     public ResponseEntity<Object> getAllCourseDetails(){
         return ResponseHandler.responseEntity("All Courses Details",courseService.getAllCourseDetails(), HttpStatus.OK);

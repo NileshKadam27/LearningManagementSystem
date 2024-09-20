@@ -1,12 +1,12 @@
 package com.example.LearningManagementSystem.config;
 
 
-import com.example.LearningManagementSystem.service.UserService;
 import com.example.LearningManagementSystem.service.UserServiceImpl;
 import com.example.LearningManagementSystem.utils.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -34,16 +34,19 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/home", "/register", "/login").permitAll();
-                    registry.requestMatchers("/v1/admin/**").hasRole("admin");
-//                    registry.requestMatchers("/v1/admin/**").permitAll();
-//                    registry.requestMatchers("/v1/users/**").hasRole("user");
-//                    registry.requestMatchers("/api/v1/cartitem").hasRole("user");
-//                    registry.requestMatchers("/api/v1/product").hasRole("user");
-//                    registry.requestMatchers("/api/v1/product/admin").hasRole("admin");
-                    registry.anyRequest().authenticated();
-                })
-                .authenticationProvider(authenticationProvider())
+                   registry.requestMatchers("/home", "/v1/user/register", "/v1/user/login").permitAll();
+//////                    registry.requestMatchers("/v1/admin/**").hasRole("admin");
+//////                    registry.requestMatchers("/v1/admin/**").permitAll();
+//////                    registry.requestMatchers("/v1/users/**").hasRole("user");
+//////                    registry.requestMatchers("/api/v1/cartitem").hasRole("user");
+//////                    registry.requestMatchers("/api/v1/product").hasRole("user");
+//////                    registry.requestMatchers("/api/v1/product/admin").hasRole("admin");
+                    //  registry.requestMatchers("/v1/course/details").hasRole("admin");
+////                        .anyRequest().authenticated();
+////
+//
+})
+               .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
