@@ -19,12 +19,14 @@ public class CourseController {
 
     //@Secured(value = { "ROLE_admin"})
 
-    @PreAuthorize("hasRole('ROLE_student')")
+
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/v1/course/details")
     public ResponseEntity<Object> getAllCourseDetails(){
         return ResponseHandler.responseEntity("All Courses Details",courseService.getAllCourseDetails(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/v1/course/category/{catid}")
     public ResponseEntity<Object> getCourseDetailsByCategory(@PathVariable Long catid){
         return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCourseDetailsByCategory(catid), HttpStatus.OK);
