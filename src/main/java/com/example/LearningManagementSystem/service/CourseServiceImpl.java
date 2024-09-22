@@ -1,5 +1,18 @@
 package com.example.LearningManagementSystem.service;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.VideoBean;
@@ -7,31 +20,18 @@ import com.example.LearningManagementSystem.bean.VideoDetailsBean;
 import com.example.LearningManagementSystem.entity.Course;
 import com.example.LearningManagementSystem.entity.CourseCategory;
 import com.example.LearningManagementSystem.entity.UserProfile;
+import com.example.LearningManagementSystem.entity.Video;
 import com.example.LearningManagementSystem.entity.VideoDetails;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.repository.CourseCategoryRepository;
 import com.example.LearningManagementSystem.repository.CourseRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
 import com.example.LearningManagementSystem.repository.VideoDetailsRepository;
+import com.example.LearningManagementSystem.repository.VideoRepository;
 
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -49,6 +49,9 @@ public class CourseServiceImpl implements CourseService {
     
     @Autowired
     private VideoDetailsRepository videoDetailsRepository;
+    
+    @Autowired
+    private VideoRepository   videoRepository;
     
     private  S3Client s3Client;
     
@@ -178,7 +181,7 @@ public class CourseServiceImpl implements CourseService {
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Course course = courseDetails(videoDetailsBean, userProfile);
 			videoDetailsResponse.setCourseCategory(videoDetailsBean.getCourseCategory());
-			//save course data to DB
+			// save course data to DB
 			videoDetailsResponse.setCourseBean(mapCourseData(course, userProfile));
 
 			// link generation logic s3
@@ -188,8 +191,10 @@ public class CourseServiceImpl implements CourseService {
 					url = uploadVideo(videoDetailsBean.getVideoBean().getVideoFile());
 				}
 			}
-			//save video data to mongo
-			VideoDetails videoDetails = mongoDetails(userKey, videoDetailsBean.getVideoBean(), url, userProfile);
+			// save video data into postgres
+			videoDetails(course.getId(), videoDetailsBean.getVideoBean(), url, userProfile);
+			// save video data to mongo
+			VideoDetails videoDetails = mongoDetails(course.getId(), videoDetailsBean, userProfile, url);
 			videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
 
 		} catch (Exception ex) {
@@ -216,14 +221,32 @@ public class CourseServiceImpl implements CourseService {
 	public VideoDetailsBean updateVideoDetails(Long courseKey, VideoDetailsBean videoDetailsBean) {
 		VideoDetailsBean videoDetailsResponse = new VideoDetailsBean();
 		try {
+			Long userKey = 1L;
+			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Optional<Course> course = courseRepository.findById(courseKey);
 			if (course.isPresent()) {
 				if (videoDetailsBean != null) {
-					Course courseFromDB = courseDetails(course.get(), videoDetailsBean);
-					videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB));
+					Course courseFromDB = courseDetails(course.get(), videoDetailsBean, userProfile);
+					videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB,userProfile));
+					videoDetailsResponse.setCoursedescription(courseFromDB.getCoursedescription());
 					if (videoDetailsBean.getVideoBean() != null) {
-						VideoDetails videoDetails = mongoDetails(courseKey, videoDetailsBean.getVideoBean());
-						videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
+						String url = null;
+						if (s3Link) {
+							if (videoDetailsBean.getVideoBean().getVideoFile() != null) {
+								url = uploadVideo(videoDetailsBean.getVideoBean().getVideoFile());
+							}
+						}
+						Video video = videoRepository.findByCourseid(courseKey);
+						if (video != null) {
+							videoDetails(video, videoDetailsBean.getVideoBean(), url, userProfile);
+						}
+
+						VideoDetails videoDets = videoDetailsRepository.findByCourseId(courseKey);
+						if (videoDets != null) {
+							VideoDetails videoDetails = mongoDetails(videoDets, videoDetailsBean, userProfile, url);
+							videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
+						}
+
 					}
 				}
 			} else {
@@ -236,29 +259,61 @@ public class CourseServiceImpl implements CourseService {
 		return videoDetailsResponse;
 	}
 
-	private VideoDetails mongoDetails(Long courseKey, VideoBean videoBean, String url, UserProfile userProfile) {
+	// save video Dets to postgres
+	private void videoDetails(Long courseKey, VideoBean videoBean, String url, UserProfile userProfile) {
+		Video video = new Video();
+		video.setVideolink(url);
+		video.setVideotile(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
+		video.setVideoduration(videoBean.getVideoDuration() != null ? videoBean.getVideoDuration() : null);
+		video.setCourseid(courseKey);
+		videoRepository.save(video);
+	}
+
+	// update video dets to postgres
+	private void videoDetails(Video video, VideoBean videoBean, String url, UserProfile userProfile) {
+		if (!StringUtils.isEmpty(url)) {
+			video.setVideolink(url);
+		}
+		video.setVideotile(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
+		video.setVideoduration(videoBean.getVideoDuration() != null ? videoBean.getVideoDuration() : null);
+		videoRepository.save(video);
+	}
+
+	// save mongo Dets
+	private VideoDetails mongoDetails(Long courseKey, VideoDetailsBean VideoDetailsBean, UserProfile userProfile,
+			String url) {
 		VideoDetails videoDetails = new VideoDetails();
+		videoDetails.setCourseId(courseKey);
 		videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
 		videoDetails.setVideoLink(url);
-		videoDetails.setVideoTitle(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
-		videoDetails.setVideoDuration(videoBean.getVideoDuration() != null ? videoBean.getVideoTitle() : null);
-		videoDetails.setCourseId(courseKey);
-		return videoDetailsRepository.save(videoDetails);
-	}
-
-	private VideoDetails mongoDetails(Long courseKey, VideoBean videoBean) {
-		VideoDetails videoDetails = videoDetailsRepository.findByCourseId(courseKey);
-		if (videoDetails != null) {
-			if (videoBean.getVideoLink() != null)
-				videoDetails.setVideoDuration(videoBean.getVideoLink());
-		}
-		if (videoBean.getVideoTitle() != null) {
-			videoDetails.setVideoTitle(videoBean.getVideoTitle());
+		if (VideoDetailsBean.getVideoBean() != null) {
+			videoDetails.setVideoTitle(VideoDetailsBean.getVideoBean().getVideoTitle());
+			videoDetails.setVideoDuration(VideoDetailsBean.getVideoBean().getVideoDuration());
+			videoDetails.setCourseDescription(VideoDetailsBean.getCoursedescription());
 		}
 		return videoDetailsRepository.save(videoDetails);
 	}
 
-	private Course courseDetails(Course course, VideoDetailsBean videoDetailsBean) {
+	// update mongo Dets
+	private VideoDetails mongoDetails(VideoDetails videoDetails, VideoDetailsBean VideoDetailsBean,
+			UserProfile userProfile, String url) {
+		videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
+		if (!StringUtils.isEmpty(url)) {
+			videoDetails.setVideoLink(url);
+		}
+		if (VideoDetailsBean.getVideoBean() != null) {
+			videoDetails.setVideoTitle(VideoDetailsBean.getVideoBean().getVideoTitle());
+			videoDetails.setVideoDuration(VideoDetailsBean.getVideoBean().getVideoDuration());
+			videoDetails.setCourseDescription(VideoDetailsBean.getCoursedescription());
+		}
+		return videoDetailsRepository.save(videoDetails);
+	}
+
+	private Course courseDetails(Course course, VideoDetailsBean videoDetailsBean, UserProfile userProfile) {
+		course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
+		course.setCoursedescription(
+				videoDetailsBean.getCoursedescription() != null ? videoDetailsBean.getCoursedescription()
+						: course.getCoursedescription());
 		if (videoDetailsBean.getCourseCategory() != null) {
 			CourseCategory courseCategory = courseCategoryRepository
 					.findByCategoryname(videoDetailsBean.getCourseCategory());
@@ -268,9 +323,6 @@ public class CourseServiceImpl implements CourseService {
 			}
 		}
 		if (videoDetailsBean.getCourseBean() != null) {
-			course.setCoursedescription(videoDetailsBean.getCourseBean().getCoursedescription() != null
-					? videoDetailsBean.getCourseBean().getCoursedescription()
-					: course.getCoursedescription());
 			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
 				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
 			}
@@ -291,9 +343,9 @@ public class CourseServiceImpl implements CourseService {
 			}
 		}
 		if (videoDetailsBean.getCourseBean() != null) {
-			course.setCoursedescription(videoDetailsBean.getCourseBean().getCoursedescription() != null
-					? videoDetailsBean.getCourseBean().getCoursedescription()
-					: course.getCoursedescription());
+			course.setCoursedescription(
+					videoDetailsBean.getCoursedescription() != null ? videoDetailsBean.getCoursedescription()
+							: course.getCoursedescription());
 			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
 				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
 			}
@@ -303,12 +355,12 @@ public class CourseServiceImpl implements CourseService {
 
 	private CourseBean mapCourseData(Course course, UserProfile userProfile) {
 		CourseBean courseBean = new CourseBean();
-		courseBean.setCoursedescription(course.getCoursedescription());
 		courseBean.setCourseName(course.getCoursename());
 		if (userProfile != null) {
 			courseBean.setExperience(userProfile.getExperience());
 			courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
 		}
+		courseBean.setUserprofilekey(course.getUserprofilekey());
 		courseBean.setCourseId(course.getId());
 		return courseBean;
 	}
@@ -323,11 +375,10 @@ public class CourseServiceImpl implements CourseService {
 
 	private CourseBean mapCourseData(Course course) {
 		CourseBean courseBean = new CourseBean();
-		courseBean.setCoursedescription(course.getCoursedescription());
 		courseBean.setCourseName(course.getCoursename());
 		courseBean.setCourseId(course.getId());
 		return courseBean;
-	}	
+	}
 	
 }
 

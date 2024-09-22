@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +42,7 @@ public class CourseController {
         return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(videoDetailsBean), HttpStatus.OK);
     }
     
-    @PostMapping("/v1/user/professor/course/register/{courseKey}")
+    @PutMapping("/v1/user/professor/course/register/{courseKey}")
     public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey, @RequestBody VideoDetailsBean videoDetailsBean){
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoDetailsBean), HttpStatus.OK);
     }

@@ -14,7 +14,7 @@ public class VideoBean {
 
 	private MultipartFile videoFile;
 
-	private Long profKey;
+
 
 	public String getVideoLink() {
 		return videoLink;
@@ -46,14 +46,6 @@ public class VideoBean {
 
 	public void setVideoFile(MultipartFile videoFile) {
 		this.videoFile = videoFile;
-	}
-
-	public Long getProfKey() {
-		return profKey;
-	}
-
-	public void setProfKey(Long profKey) {
-		this.profKey = profKey;
 	}
 
 }

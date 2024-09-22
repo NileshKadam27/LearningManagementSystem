@@ -7,5 +7,7 @@ import com.example.LearningManagementSystem.entity.Video;
 
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
+	
+	Video findByCourseid(long courseKey);
 
 }

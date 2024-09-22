@@ -19,6 +19,8 @@ public class VideoDetails {
 	private String videoDuration;
 
 	private String profName;
+	
+	private String courseDescription;
 
 	public String getId() {
 		return id;
@@ -67,5 +69,14 @@ public class VideoDetails {
 	public void setProfName(String profName) {
 		this.profName = profName;
 	}
+
+	public String getCourseDescription() {
+		return courseDescription;
+	}
+
+	public void setCourseDescription(String courseDescription) {
+		this.courseDescription = courseDescription;
+	}
+	
 
 }

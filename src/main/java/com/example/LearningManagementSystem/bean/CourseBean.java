@@ -9,8 +9,8 @@ public class CourseBean {
     private String professorName;
 
     private String experience;
-    
-    private String coursedescription;
+     
+	private Long userprofilekey;
 
     public Long getCourseId() {
         return courseId;
@@ -44,13 +44,16 @@ public class CourseBean {
         this.experience = experience;
     }
 
-	public String getCoursedescription() {
-		return coursedescription;
+	public Long getUserprofilekey() {
+		return userprofilekey;
 	}
 
-	public void setCoursedescription(String coursedescription) {
-		this.coursedescription = coursedescription;
+	public void setUserprofilekey(Long userprofilekey) {
+		this.userprofilekey = userprofilekey;
 	}
+	
+	
+	
     
     
 }
