@@ -10,6 +10,10 @@ public class CourseBean {
 
     private String experience;
 
+    private String about;
+
+    private String videoLink;
+
     public Long getCourseId() {
         return courseId;
     }
@@ -40,5 +44,21 @@ public class CourseBean {
 
     public void setExperience(String experience) {
         this.experience = experience;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
+    }
+
+    public String getVideoLink() {
+        return videoLink;
+    }
+
+    public void setVideoLink(String videoLink) {
+        this.videoLink = videoLink;
     }
 }
