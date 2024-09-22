@@ -4,15 +4,20 @@ import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.entity.Course;
 import com.example.LearningManagementSystem.entity.CourseCategory;
+import com.example.LearningManagementSystem.entity.CourseDetails;
 import com.example.LearningManagementSystem.entity.UserProfile;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
+import com.example.LearningManagementSystem.exception.LmsException;
 import com.example.LearningManagementSystem.repository.CourseCategoryRepository;
+import com.example.LearningManagementSystem.repository.CourseDetailsRepository;
 import com.example.LearningManagementSystem.repository.CourseRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,9 +35,13 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+    @Autowired
+    private CourseDetailsRepository courseDetailsRepository;
+
     @Override
-    public List<CourseDetailsBean> getAllCourseDetails() {
+    public List<CourseDetailsBean> getAllCourseDetails() throws LmsException {
         try {
+
             List<CourseCategory> courseCategoryList = courseCategoryRepository.findAll();
             if (CollectionUtils.isEmpty(courseCategoryList)) {
                 return List.of();
@@ -55,10 +64,15 @@ public class CourseServiceImpl implements CourseService {
                             UserProfile userProfile = userProfileMap.get(course.getUserprofilekey());
                             courseBean.setCourseId(course.getId());
                             courseBean.setCourseName(course.getCoursename());
-                            courseBean.setProfessorName(
-                                    userProfile != null ? userProfile.getFirstname() + " " + userProfile.getLastname() : "Unknown"
-                            );
-                            courseBean.setExperience(userProfile.getExperience());
+                            if(userProfile!=null){
+                                courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+                                courseBean.setExperience(userProfile.getExperience());
+                            }
+                            CourseDetails courseDetails = getCourseDetails(course.getId().toString());
+                            if(courseDetails!=null){
+                                courseBean.setAbout(courseDetails.getAbout());
+                                courseBean.setVideoLink(courseDetails.getVideolink());
+                            }
                             return courseBean;
                         })
                         .collect(Collectors.toList());
@@ -67,13 +81,12 @@ public class CourseServiceImpl implements CourseService {
                 return courseDetailsBean;
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            e.getMessage();
+            throw new LmsException("Exception occurred while getAllCourseDetails()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return null;
     }
 
     @Override
-    public CourseDetailsBean getCourseDetailsByCategory(Long catid) {
+    public CourseDetailsBean getCourseDetailsByCategory(Long catid) throws Exception{
         try {
             Optional<CourseCategory> courseCategoryOptional = courseCategoryRepository.findById(catid);
             if (courseCategoryOptional.isPresent()) {
@@ -97,6 +110,11 @@ public class CourseServiceImpl implements CourseService {
                             courseBean.setProfessorName(
                                     userProfile != null ? userProfile.getFirstname() + " " + userProfile.getLastname() : "Unknown"
                             );
+                            CourseDetails courseDetails = getCourseDetails(course.getId().toString());
+                            if(courseDetails!=null){
+                                courseBean.setAbout(courseDetails.getAbout());
+                                courseBean.setVideoLink(courseDetails.getVideolink());
+                            }
                             return courseBean;
                         })
                         .collect(Collectors.toList());
@@ -106,17 +124,21 @@ public class CourseServiceImpl implements CourseService {
                 throw new EntityDataNotFound("Category doesn't exist");
             }
         } catch (Exception e) {
-            e.getMessage();
+            throw new LmsException("Exception occurred while getCourseDetailsByCategory()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return null;
     }
 
     @Override
-    public CourseBean getCourseDetailsById(Long courseid) {
+    public CourseBean getCourseDetailsById(Long courseid) throws Exception{
         CourseBean courseBean = new CourseBean();
         try {
             Course course = courseRepository.findByIdAndIsactive(courseid, 1);
             if (course != null) {
+                CourseDetails courseDetails = getCourseDetails(course.getId().toString());
+                if(courseDetails!=null){
+                    courseBean.setAbout(courseDetails.getAbout());
+                    courseBean.setVideoLink(courseDetails.getVideolink());
+                }
                 courseBean.setCourseName(course.getCoursename());
                 UserProfile userProfile = getUserDetails(course.getUserprofilekey());
                 if (userProfile != null) {
@@ -125,7 +147,7 @@ public class CourseServiceImpl implements CourseService {
                 }
             }
         } catch (Exception e) {
-            e.getMessage();
+            throw new LmsException("Exception occurred while getCourseDetailsById()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return courseBean;
     }
@@ -137,6 +159,10 @@ public class CourseServiceImpl implements CourseService {
         } else {
             throw new EntityDataNotFound("User doesn't exist");
         }
+    }
+
+    private CourseDetails getCourseDetails(String courseId){
+        return courseDetailsRepository.findByCourseid(courseId);
     }
 }
 
