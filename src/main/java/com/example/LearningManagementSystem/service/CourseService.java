@@ -1,10 +1,9 @@
 package com.example.LearningManagementSystem.service;
 
+import java.util.List;
+
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
-import com.example.LearningManagementSystem.bean.VideoDetailsBean;
-
-import java.util.List;
 
 public interface CourseService {
 
@@ -14,7 +13,9 @@ public interface CourseService {
 
     public CourseBean getCourseDetailsById(Long courseid);
     
-    public VideoDetailsBean uploadVideoDetails(VideoDetailsBean videoDetailsBean);
+    public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean);
     
-    public VideoDetailsBean updateVideoDetails(Long courseKey,VideoDetailsBean videoDetailsBean);
+    public CourseBean updateVideoDetails(Long courseKey,Long videoId,CourseBean courseBean);
+
+
 }

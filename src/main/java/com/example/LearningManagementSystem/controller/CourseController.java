@@ -1,6 +1,7 @@
 package com.example.LearningManagementSystem.controller;
 
-import com.example.LearningManagementSystem.bean.VideoDetailsBean;
+import com.example.LearningManagementSystem.bean.CourseBean;
+import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -38,12 +40,20 @@ public class CourseController {
     
     
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(@RequestBody VideoDetailsBean videoDetailsBean){
-        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(videoDetailsBean), HttpStatus.OK);
+    public ResponseEntity<Object> uploadVideoDetails(@RequestBody CourseDetailsBean courseDetailsBean){
+        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(courseDetailsBean), HttpStatus.OK);
     }
     
     @PutMapping("/v1/user/professor/course/register/{courseKey}")
-    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey, @RequestBody VideoDetailsBean videoDetailsBean){
-        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoDetailsBean), HttpStatus.OK);
+    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@RequestParam Long videoId,
+    		@RequestBody CourseBean courseBean){
+        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,courseBean), HttpStatus.OK);
+    }
+    
+    
+    
+    @GetMapping("/v1/user/mycourse")
+    public ResponseEntity<Object> getProfCourses(@PathVariable Long courseid){
+        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCourseDetailsById(courseid), HttpStatus.OK);
     }
 }

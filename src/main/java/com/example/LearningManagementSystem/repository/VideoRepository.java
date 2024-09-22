@@ -9,5 +9,8 @@ import com.example.LearningManagementSystem.entity.Video;
 public interface VideoRepository extends JpaRepository<Video, Long> {
 	
 	Video findByCourseid(long courseKey);
+	
+	
+	Video findByIdAndCourseid(Long id,Long courseKey);
 
 }

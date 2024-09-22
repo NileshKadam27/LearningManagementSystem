@@ -5,6 +5,9 @@ import java.io.File;
 import org.springframework.web.multipart.MultipartFile;
 
 public class VideoBean {
+	
+	
+	private Long videoId;
 
 	private String videoLink;
 
@@ -14,7 +17,13 @@ public class VideoBean {
 
 	private MultipartFile videoFile;
 
+	public Long getVideoId() {
+		return videoId;
+	}
 
+	public void setVideoId(Long videoId) {
+		this.videoId = videoId;
+	}
 
 	public String getVideoLink() {
 		return videoLink;

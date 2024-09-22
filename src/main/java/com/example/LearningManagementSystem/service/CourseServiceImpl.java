@@ -1,6 +1,7 @@
 package com.example.LearningManagementSystem.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.VideoBean;
-import com.example.LearningManagementSystem.bean.VideoDetailsBean;
 import com.example.LearningManagementSystem.entity.Course;
 import com.example.LearningManagementSystem.entity.CourseCategory;
 import com.example.LearningManagementSystem.entity.UserProfile;
@@ -173,35 +173,48 @@ public class CourseServiceImpl implements CourseService {
     }
 
 	@Override
-	public VideoDetailsBean uploadVideoDetails(VideoDetailsBean videoDetailsBean) {
-		VideoDetailsBean videoDetailsResponse = new VideoDetailsBean();
+	public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean) {
+		List<CourseBean> courses = new ArrayList<>();
+		CourseDetailsBean courseDetailsReponse = new CourseDetailsBean();
 		try {
-			// get userkey from header
 			Long userKey = 1L;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
-			Course course = courseDetails(videoDetailsBean, userProfile);
-			videoDetailsResponse.setCourseCategory(videoDetailsBean.getCourseCategory());
-			// save course data to DB
-			videoDetailsResponse.setCourseBean(mapCourseData(course, userProfile));
+			List<CourseCategory> courseCategories = courseCategoryRepository.findAll();
+			List<String> categoryNameList = courseCategories.stream().map(category -> category.getCategoryname())
+					.collect(Collectors.toList());
+			if (categoryNameList.contains(courseDetailsBean.getCourseCategory())) {
+				CourseCategory courseCategory = courseCategoryRepository
+						.findByCategoryname(courseDetailsBean.getCourseCategory());
+				courseDetailsReponse.setCourseCategory(courseCategory.getCategoryname());
+				courseDetailsReponse.setCourseDetailList(courseDetailsBean.getCourseDetailList().stream().map(value -> {
+					Course course = new Course();
+					course.setCoursecategorykey(courseCategory.getId());
+					course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
+					course.setCoursedescription(value.getCoursedescription() != null ? value.getCoursedescription()
+							: null);
+					course.setCoursename(value.getCourseName());
+					Course courseFromDB = courseRepository.save(course);
+					CourseBean courseBean = new CourseBean();
+					courseBean.setCoursedescription(courseFromDB.getCoursedescription());
+					courseBean.setCourseId(courseFromDB.getId());
+					courseBean.setCourseName(courseFromDB.getCoursename());
+					courseBean.setExperience(userProfile.getExperience());
+					courseBean.setUserprofilekey(userProfile.getId());
+					courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+					courseBean.setVideoBean(getVideoDetails(value.getVideoBean(), courseFromDB));
 
-			// link generation logic s3
-			String url = null;
-			if (s3Link) {
-				if (videoDetailsBean.getVideoBean() != null) {
-					url = uploadVideo(videoDetailsBean.getVideoBean().getVideoFile());
-				}
+					return courseBean;
+				}).collect(Collectors.toList()));
+			} else {
+				throw new EntityDataNotFound("Course not found for given courseKey");
 			}
-			// save video data into postgres
-			videoDetails(course.getId(), videoDetailsBean.getVideoBean(), url, userProfile);
-			// save video data to mongo
-			VideoDetails videoDetails = mongoDetails(course.getId(), videoDetailsBean, userProfile, url);
-			videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
 
 		} catch (Exception ex) {
 			ex.getMessage();
 		}
-		return videoDetailsResponse;
+		return courseDetailsReponse;
 	}
+
 
 	private String uploadVideo(MultipartFile file) throws IOException {
 		String fileName = file.getOriginalFilename();
@@ -218,168 +231,108 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	@Override
-	public VideoDetailsBean updateVideoDetails(Long courseKey, VideoDetailsBean videoDetailsBean) {
-		VideoDetailsBean videoDetailsResponse = new VideoDetailsBean();
+	public CourseBean updateVideoDetails(Long courseKey, Long videoId, CourseBean courseBean) {
 		try {
 			Long userKey = 1L;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Optional<Course> course = courseRepository.findById(courseKey);
 			if (course.isPresent()) {
-				if (videoDetailsBean != null) {
-					Course courseFromDB = courseDetails(course.get(), videoDetailsBean, userProfile);
-					videoDetailsResponse.setCourseBean(mapCourseData(courseFromDB,userProfile));
-					videoDetailsResponse.setCoursedescription(courseFromDB.getCoursedescription());
-					if (videoDetailsBean.getVideoBean() != null) {
-						String url = null;
-						if (s3Link) {
-							if (videoDetailsBean.getVideoBean().getVideoFile() != null) {
-								url = uploadVideo(videoDetailsBean.getVideoBean().getVideoFile());
-							}
-						}
-						Video video = videoRepository.findByCourseid(courseKey);
-						if (video != null) {
-							videoDetails(video, videoDetailsBean.getVideoBean(), url, userProfile);
-						}
+				course.get().setCoursedescription(courseBean.getCoursedescription());
+				course.get().setCoursename(courseBean.getCourseName());
+				Course courseFromDB = courseRepository.save(course.get());
 
-						VideoDetails videoDets = videoDetailsRepository.findByCourseId(courseKey);
-						if (videoDets != null) {
-							VideoDetails videoDetails = mongoDetails(videoDets, videoDetailsBean, userProfile, url);
-							videoDetailsResponse.setVideoBean(mapMongoData(videoDetails));
+				VideoBean videoBean = courseBean.getVideoBean().get(0);
+				String url = "";
+				if (videoBean != null) {
+					if (s3Link) {
+						try {
+							url = uploadVideo(courseBean.getVideoBean().get(0).getVideoFile());
+						} catch (Exception e) {
+							e.getMessage();
 						}
-
 					}
+					Video video = videoRepository.findByIdAndCourseid(videoId, courseKey);
+					video.setVideoduration(videoBean.getVideoDuration());
+					video.setVideolink(url);
+					video.setVideotile(videoBean.getVideoTitle());
+					Video videoFromDB = videoRepository.save(video);
+					VideoDetails videoDetaisl = videoDetailsRepository.findByCourseIdAndVideoId(courseKey, videoId);
+					VideoDetails videoDetails = new VideoDetails();
+					videoDetails.setVideoDuration(videoBean.getVideoDuration());
+					videoDetails.setVideoLink(url);
+					videoDetails.setVideoTitle(videoBean.getVideoTitle());
+					VideoDetails VideoDetailsFromDB = videoDetailsRepository.save(videoDetails);
+
+					CourseBean courseResponse = mapCourse(courseFromDB);
+					List<VideoBean> videobeans = new ArrayList<>();
+
+					videobeans.add(mapVideoData(VideoDetailsFromDB));
+					courseResponse.setVideoBean(videobeans);
 				}
-			} else {
-				throw new EntityDataNotFound("Course not found for given courseKey");
 			}
 
 		} catch (Exception ex) {
 			ex.getMessage();
 		}
-		return videoDetailsResponse;
-	}
-
-	// save video Dets to postgres
-	private void videoDetails(Long courseKey, VideoBean videoBean, String url, UserProfile userProfile) {
-		Video video = new Video();
-		video.setVideolink(url);
-		video.setVideotile(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
-		video.setVideoduration(videoBean.getVideoDuration() != null ? videoBean.getVideoDuration() : null);
-		video.setCourseid(courseKey);
-		videoRepository.save(video);
-	}
-
-	// update video dets to postgres
-	private void videoDetails(Video video, VideoBean videoBean, String url, UserProfile userProfile) {
-		if (!StringUtils.isEmpty(url)) {
-			video.setVideolink(url);
-		}
-		video.setVideotile(videoBean.getVideoTitle() != null ? videoBean.getVideoTitle() : null);
-		video.setVideoduration(videoBean.getVideoDuration() != null ? videoBean.getVideoDuration() : null);
-		videoRepository.save(video);
-	}
-
-	// save mongo Dets
-	private VideoDetails mongoDetails(Long courseKey, VideoDetailsBean VideoDetailsBean, UserProfile userProfile,
-			String url) {
-		VideoDetails videoDetails = new VideoDetails();
-		videoDetails.setCourseId(courseKey);
-		videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
-		videoDetails.setVideoLink(url);
-		if (VideoDetailsBean.getVideoBean() != null) {
-			videoDetails.setVideoTitle(VideoDetailsBean.getVideoBean().getVideoTitle());
-			videoDetails.setVideoDuration(VideoDetailsBean.getVideoBean().getVideoDuration());
-			videoDetails.setCourseDescription(VideoDetailsBean.getCoursedescription());
-		}
-		return videoDetailsRepository.save(videoDetails);
-	}
-
-	// update mongo Dets
-	private VideoDetails mongoDetails(VideoDetails videoDetails, VideoDetailsBean VideoDetailsBean,
-			UserProfile userProfile, String url) {
-		videoDetails.setProfName(userProfile.getFirstname() + " " + userProfile.getLastname());
-		if (!StringUtils.isEmpty(url)) {
-			videoDetails.setVideoLink(url);
-		}
-		if (VideoDetailsBean.getVideoBean() != null) {
-			videoDetails.setVideoTitle(VideoDetailsBean.getVideoBean().getVideoTitle());
-			videoDetails.setVideoDuration(VideoDetailsBean.getVideoBean().getVideoDuration());
-			videoDetails.setCourseDescription(VideoDetailsBean.getCoursedescription());
-		}
-		return videoDetailsRepository.save(videoDetails);
-	}
-
-	private Course courseDetails(Course course, VideoDetailsBean videoDetailsBean, UserProfile userProfile) {
-		course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
-		course.setCoursedescription(
-				videoDetailsBean.getCoursedescription() != null ? videoDetailsBean.getCoursedescription()
-						: course.getCoursedescription());
-		if (videoDetailsBean.getCourseCategory() != null) {
-			CourseCategory courseCategory = courseCategoryRepository
-					.findByCategoryname(videoDetailsBean.getCourseCategory());
-			Long courseCategoryKey = courseCategory.getId() != null ? courseCategory.getId() : null;
-			if (courseCategoryKey != null) {
-				course.setCoursecategorykey(courseCategoryKey);
-			}
-		}
-		if (videoDetailsBean.getCourseBean() != null) {
-			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
-				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
-			}
-		}
-		return courseRepository.save(course);
-	}
-
-	private Course courseDetails(VideoDetailsBean videoDetailsBean, UserProfile userProfile) {
-		Course course = new Course();
-		course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
-
-		if (videoDetailsBean.getCourseCategory() != null) {
-			CourseCategory courseCategory = courseCategoryRepository
-					.findByCategoryname(videoDetailsBean.getCourseCategory());
-			Long courseCategoryKey = courseCategory.getId() != null ? courseCategory.getId() : null;
-			if (courseCategoryKey != null) {
-				course.setCoursecategorykey(courseCategoryKey);
-			}
-		}
-		if (videoDetailsBean.getCourseBean() != null) {
-			course.setCoursedescription(
-					videoDetailsBean.getCoursedescription() != null ? videoDetailsBean.getCoursedescription()
-							: course.getCoursedescription());
-			if (videoDetailsBean.getCourseBean().getCourseName() != null) {
-				course.setCoursename(videoDetailsBean.getCourseBean().getCourseName());
-			}
-		}
-		return courseRepository.save(course);
-	}
-
-	private CourseBean mapCourseData(Course course, UserProfile userProfile) {
-		CourseBean courseBean = new CourseBean();
-		courseBean.setCourseName(course.getCoursename());
-		if (userProfile != null) {
-			courseBean.setExperience(userProfile.getExperience());
-			courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
-		}
-		courseBean.setUserprofilekey(course.getUserprofilekey());
-		courseBean.setCourseId(course.getId());
 		return courseBean;
 	}
 
-	private VideoBean mapMongoData(VideoDetails videoDets) {
+	private List<VideoBean> getVideoDetails(List<VideoBean> videoBean, Course course) {
+		return videoBean.stream().map(videoDet -> {
+			Video video = new Video();
+			video.setCourseid(course.getId());
+			video.setVideoduration(videoDet.getVideoDuration());
+			String url = "";
+			if (s3Link) {
+				try {
+					url = uploadVideo(videoDet.getVideoFile());
+				} catch (Exception e) {
+					e.getMessage();
+				}
+			}
+			video.setVideolink(url);
+			video.setVideotile(videoDet.getVideoTitle());
+			Video videoFromDB = videoRepository.save(video);
+			VideoDetails videoDetails = new VideoDetails();
+			videoDetails.setCourseId(course.getId());
+			videoDetails.setVideoDuration(videoDet.getVideoDuration());
+			videoDetails.setCourseDescription(course.getCoursedescription());
+			videoDetails.setVideoLink(url);
+			videoDetails.setVideoTitle(videoDet.getVideoTitle());
+			videoDetails.setVideoId(videoFromDB.getId());
+			VideoDetails VideoDetailsFromDB = videoDetailsRepository.save(videoDetails);
+			return mapVideoData(VideoDetailsFromDB);
+		}).collect(Collectors.toList());
+	}
+
+	private CourseDetailsBean mapcourseDetails(VideoDetails videoDets, Course course) {
+		CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
+		Optional<CourseCategory> courseCategory = courseCategoryRepository.findById(course.getId());
+		if (courseCategory.isPresent()) {
+			courseDetailsBean.setCourseCategory(courseCategory.get().getCategoryname());
+		}
+
+		return null;
+	}
+
+	private CourseBean mapCourse(Course course) {
+		CourseBean courseBean = new CourseBean();
+		courseBean.setCoursedescription(course.getCoursedescription());
+		courseBean.setCourseId(course.getId());
+		courseBean.setUserprofilekey(course.getUserprofilekey());
+		courseBean.setCourseName(course.getCoursename());
+		return courseBean;
+	}
+
+	private VideoBean mapVideoData(VideoDetails videoDets) {
 		VideoBean videoBean = new VideoBean();
 		videoBean.setVideoDuration(videoDets.getVideoDuration());
+		videoBean.setVideoId(videoDets.getVideoId());
 		videoBean.setVideoLink(videoDets.getVideoLink());
 		videoBean.setVideoTitle(videoDets.getVideoTitle());
 		return videoBean;
 	}
 
-	private CourseBean mapCourseData(Course course) {
-		CourseBean courseBean = new CourseBean();
-		courseBean.setCourseName(course.getCoursename());
-		courseBean.setCourseId(course.getId());
-		return courseBean;
-	}
-	
 }
 
 

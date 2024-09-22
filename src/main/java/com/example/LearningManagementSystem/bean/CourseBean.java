@@ -1,5 +1,7 @@
 package com.example.LearningManagementSystem.bean;
 
+import java.util.List;
+
 public class CourseBean {
 
     private  Long courseId;
@@ -11,6 +13,10 @@ public class CourseBean {
     private String experience;
      
 	private Long userprofilekey;
+	
+	private String coursedescription;
+	
+	private List<VideoBean> videoBean;
 
     public Long getCourseId() {
         return courseId;
@@ -51,9 +57,22 @@ public class CourseBean {
 	public void setUserprofilekey(Long userprofilekey) {
 		this.userprofilekey = userprofilekey;
 	}
-	
-	
-	
-    
+
+
+	public List<VideoBean> getVideoBean() {
+		return videoBean;
+	}
+
+	public void setVideoBean(List<VideoBean> videoBean) {
+		this.videoBean = videoBean;
+	}
+
+	public String getCoursedescription() {
+		return coursedescription;
+	}
+
+	public void setCoursedescription(String coursedescription) {
+		this.coursedescription = coursedescription;
+	}  
     
 }
