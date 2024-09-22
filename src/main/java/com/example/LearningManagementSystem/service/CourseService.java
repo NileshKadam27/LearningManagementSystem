@@ -16,6 +16,8 @@ public interface CourseService {
     public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean);
     
     public CourseBean updateVideoDetails(Long courseKey,Long videoId,CourseBean courseBean);
+    
+    public List<CourseDetailsBean>  getCoursesDetails();
 
 
 }

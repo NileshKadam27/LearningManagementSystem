@@ -10,5 +10,7 @@ public interface VideoDetailsRepository extends MongoRepository<VideoDetails, St
 	
 	VideoDetails findByCourseIdAndVideoId(Long courseKey,Long videoId);
 	
+	VideoDetails  findByvideoId(Long videoId);
+	
 
 }

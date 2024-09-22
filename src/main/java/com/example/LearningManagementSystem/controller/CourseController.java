@@ -53,7 +53,7 @@ public class CourseController {
     
     
     @GetMapping("/v1/user/mycourse")
-    public ResponseEntity<Object> getProfCourses(@PathVariable Long courseid){
-        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCourseDetailsById(courseid), HttpStatus.OK);
+    public ResponseEntity<Object> getProfCourses(){
+        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
     }
 }
