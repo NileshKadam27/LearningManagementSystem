@@ -1,11 +1,19 @@
 package com.example.LearningManagementSystem.bean;
 
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+
+@Valid
 public class UserCreationBean {
 
+    @NotEmpty(message = "username must not be null or empty")
     private String username;
 
+    @NotEmpty(message = "password must not be null or empty")
     private String password;
 
+    @NotEmpty(message = "roleCode must not be null or empty")
     private String roleCode;
 
     private String firstname;

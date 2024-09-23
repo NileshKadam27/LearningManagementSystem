@@ -7,6 +7,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 public class AuthenticationService {
 
@@ -16,19 +21,23 @@ public class AuthenticationService {
     @Autowired
     private JwtService jwtService;
 
-    public String userAuthentication(UserLoginBean userLoginBean){
+    public Map<String,Object> userAuthentication(UserLoginBean userLoginBean){
+        Map<String,Object> tokenMap = new HashMap<>();
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userLoginBean.getUsername(), userLoginBean.getPassword())
             );
 
             if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(userLoginBean.getUsername());
+                tokenMap.put("token",jwtService.generateToken(userLoginBean.getUsername()));
+                Set<String> roles = authentication.getAuthorities().stream()
+                        .map(r -> r.getAuthority()).collect(Collectors.toSet());
+                tokenMap.put("role",roles);
             }
         }catch (Exception e){
-            e.printStackTrace();
+
         }
-        return null;
+        return tokenMap;
 
     }
 }

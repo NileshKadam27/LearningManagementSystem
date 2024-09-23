@@ -10,13 +10,17 @@ import com.example.LearningManagementSystem.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @CrossOrigin
+@Validated
 public class UserController {
 
     @Autowired
@@ -28,7 +32,7 @@ public class UserController {
 
 
     @PostMapping("/v1/user/register")
-    public ResponseEntity<Object> createUser(@RequestBody UserCreationBean userCreationBean) throws Exception {
+    public ResponseEntity<Object> createUser(@Valid @RequestBody UserCreationBean userCreationBean,  BindingResult result) throws Exception {
         ResponseBean responseBean = new ResponseBean();
         responseBean.setPayload(userService.createUser(userCreationBean));
         responseBean.setMessage("User Created.");
@@ -37,11 +41,11 @@ public class UserController {
 
 
     @PostMapping("/v1/user/login")
-    public ResponseEntity<Object> login(@RequestBody UserLoginBean userLoginBean) throws Exception {
+    public ResponseEntity<Object> login(@Valid @RequestBody UserLoginBean userLoginBean) throws Exception {
         ResponseBean responseBean = new ResponseBean();
-        Map<String,String> tokenMap = new HashMap<>();
-        tokenMap.put("token",authenticationService.userAuthentication(userLoginBean));
+        Map<String,Object> tokenMap =authenticationService.userAuthentication(userLoginBean);
         responseBean.setPayload(tokenMap);
+        responseBean.setMessage("SUCCESS");
         return ResponseHandler.responseEntity(responseBean, HttpStatus.CREATED);
     }
 
