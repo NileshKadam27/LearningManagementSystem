@@ -13,4 +13,10 @@ public interface CourseService {
     public CourseDetailsBean getCourseDetailsByCategory(Long catid) throws Exception;
 
     public CourseBean getCourseDetailsById(Long courseid) throws Exception;
+    
+	public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean);
+
+	public CourseBean updateVideoDetails(Long courseKey, Long videoId, CourseBean courseBean);
+
+	public List<CourseDetailsBean> getCoursesDetails();
 }

@@ -2,20 +2,35 @@ package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
+import com.example.LearningManagementSystem.bean.VideoBean;
 import com.example.LearningManagementSystem.entity.Course;
 import com.example.LearningManagementSystem.entity.CourseCategory;
 import com.example.LearningManagementSystem.entity.CourseDetails;
 import com.example.LearningManagementSystem.entity.UserProfile;
+import com.example.LearningManagementSystem.entity.Video;
+import com.example.LearningManagementSystem.entity.VideoDetails;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.exception.LmsException;
 import com.example.LearningManagementSystem.repository.CourseCategoryRepository;
 import com.example.LearningManagementSystem.repository.CourseDetailsRepository;
 import com.example.LearningManagementSystem.repository.CourseRepository;
 import com.example.LearningManagementSystem.repository.UserProfileRepository;
+import com.example.LearningManagementSystem.repository.VideoDetailsRepository;
+import com.example.LearningManagementSystem.repository.VideoRepository;
+
+import io.jsonwebtoken.io.IOException;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +52,21 @@ public class CourseServiceImpl implements CourseService {
 
     @Autowired
     private CourseDetailsRepository courseDetailsRepository;
+    
+    @Autowired
+    private VideoDetailsRepository videoDetailsRepository;
+    
+    @Autowired
+    private VideoRepository   videoRepository;
+    
+    private  S3Client s3Client;
+    
+    @Value("${aws.s3.bucketName}")
+	private String bucketName;
+    
+    
+    @Value("${s3.video.link:false}")
+  	private Boolean s3Link;
 
     @Override
     public List<CourseDetailsBean> getAllCourseDetails() throws LmsException {
@@ -164,6 +194,199 @@ public class CourseServiceImpl implements CourseService {
     private CourseDetails getCourseDetails(String courseId){
         return courseDetailsRepository.findByCourseid(courseId);
     }
+    
+	@Override
+	public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean) {
+		List<CourseBean> courses = new ArrayList<>();
+		CourseDetailsBean courseDetailsReponse = new CourseDetailsBean();
+		try {
+			Long userKey = 1L;
+			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
+			List<CourseCategory> courseCategories = courseCategoryRepository.findAll();
+			List<String> categoryNameList = courseCategories.stream().map(category -> category.getCategoryname())
+					.collect(Collectors.toList());
+			if (categoryNameList.contains(courseDetailsBean.getCourseCategory())) {
+				CourseCategory courseCategory = courseCategoryRepository
+						.findByCategoryname(courseDetailsBean.getCourseCategory());
+				courseDetailsReponse.setCourseCategory(courseCategory.getCategoryname());
+				courseDetailsReponse.setCourseDetailList(courseDetailsBean.getCourseDetailList().stream().map(value -> {
+					Course course = new Course();
+					course.setCoursecategorykey(courseCategory.getId());
+					course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
+					course.setCoursedescription(
+							value.getCoursedescription() != null ? value.getCoursedescription() : null);
+					course.setCoursename(value.getCourseName());
+					Course courseFromDB = courseRepository.save(course);
+					CourseBean courseBean = new CourseBean();
+					courseBean.setCoursedescription(courseFromDB.getCoursedescription());
+					courseBean.setCourseId(courseFromDB.getId());
+					courseBean.setCourseName(courseFromDB.getCoursename());
+					courseBean.setExperience(userProfile.getExperience());
+					courseBean.setUserprofilekey(userProfile.getId());
+					courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+					courseBean.setVideoBean(getVideoDetails(value.getVideoBean(), courseFromDB));
+
+					return courseBean;
+				}).collect(Collectors.toList()));
+			} else {
+				throw new EntityDataNotFound("Course not found for given courseKey");
+			}
+
+		} catch (Exception ex) {
+			ex.getMessage();
+		}
+		return courseDetailsReponse;
+	}
+
+	private String uploadVideo(MultipartFile file) {
+		String fileName = file.getOriginalFilename();
+		try {
+			s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName)
+					.contentType(file.getContentType()).build(), RequestBody.fromBytes(file.getBytes()));
+		} catch (Exception e) {
+			e.getMessage();
+		}
+
+		return getVideoLink(bucketName, fileName);
+	}
+
+	private String getVideoLink(String bcktName, String fileName) {
+		String url = "https://" + bcktName + ".s3.amazonaws.com/" + fileName;
+		return url;
+	}
+
+	@Override
+	public CourseBean updateVideoDetails(Long courseKey, Long videoId, CourseBean courseBean) {
+		try {
+			Long userKey = 1L;
+			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
+			Optional<Course> course = courseRepository.findById(courseKey);
+			if (course.isPresent()) {
+				course.get().setCoursedescription(courseBean.getCoursedescription());
+				course.get().setCoursename(courseBean.getCourseName());
+				Course courseFromDB = courseRepository.save(course.get());
+
+				VideoBean videoBean = courseBean.getVideoBean().get(0);
+				String url = "";
+				if (videoBean != null) {
+					if (s3Link) {
+						try {
+							url = uploadVideo(courseBean.getVideoBean().get(0).getVideoFile());
+						} catch (Exception e) {
+							e.getMessage();
+						}
+					}
+					Video video = videoRepository.findByIdAndCourseid(videoId, courseKey);
+					video.setVideoduration(videoBean.getVideoDuration());
+					video.setVideolink(url);
+					video.setVideotile(videoBean.getVideoTitle());
+					Video videoFromDB = videoRepository.save(video);
+					VideoDetails videoDetaisl = videoDetailsRepository.findByCourseIdAndVideoId(courseKey, videoId);
+					VideoDetails videoDetails = new VideoDetails();
+					videoDetails.setVideoDuration(videoBean.getVideoDuration());
+					videoDetails.setVideoLink(url);
+					videoDetails.setVideoTitle(videoBean.getVideoTitle());
+					VideoDetails VideoDetailsFromDB = videoDetailsRepository.save(videoDetails);
+
+					CourseBean courseResponse = mapCourse(courseFromDB);
+					List<VideoBean> videobeans = new ArrayList<>();
+
+					videobeans.add(mapVideoData(VideoDetailsFromDB));
+					courseResponse.setVideoBean(videobeans);
+				}
+			}
+
+		} catch (Exception ex) {
+			ex.getMessage();
+		}
+		return courseBean;
+	}
+
+	private List<VideoBean> getVideoDetails(List<VideoBean> videoBean, Course course) {
+		return videoBean.stream().map(videoDet -> {
+			Video video = new Video();
+			video.setCourseid(course.getId());
+			video.setVideoduration(videoDet.getVideoDuration());
+			String url = "";
+			if (s3Link) {
+				try {
+					url = uploadVideo(videoDet.getVideoFile());
+				} catch (Exception e) {
+					e.getMessage();
+				}
+			}
+			video.setVideolink(url);
+			video.setVideotile(videoDet.getVideoTitle());
+			Video videoFromDB = videoRepository.save(video);
+			VideoDetails videoDetails = new VideoDetails();
+			videoDetails.setCourseId(course.getId());
+			videoDetails.setVideoDuration(videoDet.getVideoDuration());
+			videoDetails.setCourseDescription(course.getCoursedescription());
+			videoDetails.setVideoLink(url);
+			videoDetails.setVideoTitle(videoDet.getVideoTitle());
+			videoDetails.setVideoId(videoFromDB.getId());
+			VideoDetails VideoDetailsFromDB = videoDetailsRepository.save(videoDetails);
+			return mapVideoData(VideoDetailsFromDB);
+		}).collect(Collectors.toList());
+	}
+
+	private CourseBean mapCourse(Course course) {
+		CourseBean courseBean = new CourseBean();
+		courseBean.setCoursedescription(course.getCoursedescription());
+		courseBean.setCourseId(course.getId());
+		courseBean.setUserprofilekey(course.getUserprofilekey());
+		courseBean.setCourseName(course.getCoursename());
+		return courseBean;
+	}
+
+	private VideoBean mapVideoData(VideoDetails videoDets) {
+		VideoBean videoBean = new VideoBean();
+		videoBean.setVideoDuration(videoDets.getVideoDuration());
+		videoBean.setVideoId(videoDets.getVideoId());
+		videoBean.setVideoLink(videoDets.getVideoLink());
+		videoBean.setVideoTitle(videoDets.getVideoTitle());
+		return videoBean;
+	}
+
+	@Override
+	public List<CourseDetailsBean> getCoursesDetails() {
+		List<CourseDetailsBean> courseDetailsBeans = new ArrayList<>();
+		try {
+			Long userKey = 1L;
+			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
+			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
+			List<CourseCategory> categories = courseCategoryRepository.findAll();
+			courseDetailsBeans = courses.stream().map(course -> {
+				CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
+				courseDetailsBean.setCourseCategory(
+						categories.stream().filter(value -> value.getId() == course.getCoursecategorykey())
+								.collect(Collectors.toList()).get(0).getCategoryname());
+				CourseBean courseBean = new CourseBean();
+				courseBean.setCoursedescription(course.getCoursedescription());
+				courseBean.setCourseName(course.getCoursename());
+				courseBean.setExperience(userProfile.getExperience());
+				courseBean.setUserprofilekey(userProfile.getId());
+
+				List<VideoBean> videoBeans = videoRepository.findByCourseid(course.getId()).stream().map(video -> {
+					VideoBean videoBean = new VideoBean();
+					videoBean.setVideoId(video.getId());
+					videoBean.setVideoLink(video.getVideolink());
+					videoBean.setVideoTitle(video.getVideotile());
+					return videoBean;
+				}).collect(Collectors.toList());
+				courseBean.setVideoBean(videoBeans);
+				List<CourseBean> list = new ArrayList<>();
+				list.add(courseBean);
+
+				courseDetailsBean.setCourseDetailList(list);
+				return courseDetailsBean;
+			}).collect(Collectors.toList());
+		} catch (Exception ex) {
+			ex.getMessage();
+		}
+		return courseDetailsBeans;
+	}
+
 }
 
 

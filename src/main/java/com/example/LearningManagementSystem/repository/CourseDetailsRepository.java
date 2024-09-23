@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CourseDetailsRepository extends MongoRepository<CourseDetails,Long> {
+public interface CourseDetailsRepository extends MongoRepository<CourseDetails,String> {
     CourseDetails findByCourseid(String courseId);
 }
