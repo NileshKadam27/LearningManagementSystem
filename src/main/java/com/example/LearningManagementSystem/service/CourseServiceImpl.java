@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -355,38 +356,38 @@ public class CourseServiceImpl implements CourseService {
 			Long userKey = 1L;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
-			List<CourseCategory> categories = courseCategoryRepository.findAll();
-			courseDetailsBeans = courses.stream().map(course -> {
+			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
+					.collect(Collectors.toSet());
+			courseDetailsBeans = categoryId.stream().map(catId -> {
 				CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
-				courseDetailsBean.setCourseCategory(
-						categories.stream().filter(value -> value.getId() == course.getCoursecategorykey())
-								.collect(Collectors.toList()).get(0).getCategoryname());
-				CourseBean courseBean = new CourseBean();
-				courseBean.setCoursedescription(course.getCoursedescription());
-				courseBean.setCourseName(course.getCoursename());
-				courseBean.setExperience(userProfile.getExperience());
-				courseBean.setUserprofilekey(userProfile.getId());
+				courseDetailsBean.setCourseCategory(courseCategoryRepository.findById(catId).get().getCategoryname());
+				List<Course> coursess = courseRepository.findByCoursecategorykey(catId);
+				if (!coursess.isEmpty()) {
+					courseDetailsBean.setCourseDetailList(courses.stream().map(course -> {
 
-				List<VideoBean> videoBeans = videoRepository.findByCourseid(course.getId()).stream().map(video -> {
-					VideoBean videoBean = new VideoBean();
-					videoBean.setVideoId(video.getId());
-					videoBean.setVideoLink(video.getVideolink());
-					videoBean.setVideoTitle(video.getVideotile());
-					return videoBean;
-				}).collect(Collectors.toList());
-				courseBean.setVideoBean(videoBeans);
-				List<CourseBean> list = new ArrayList<>();
-				list.add(courseBean);
-
-				courseDetailsBean.setCourseDetailList(list);
+						CourseBean courseBean = new CourseBean();
+						courseBean.setCoursedescription(course.getCoursedescription());
+						courseBean.setCourseName(course.getCoursename());
+						courseBean.setExperience(userProfile.getExperience());
+						courseBean.setUserprofilekey(userProfile.getId());
+						courseBean.setVideoBean(videoRepository.findByCourseid(course.getId()).stream().map(video -> {
+							VideoBean videoBean = new VideoBean();
+							videoBean.setVideoId(video.getId());
+							videoBean.setVideoLink(video.getVideolink());
+							videoBean.setVideoTitle(video.getVideotile());
+							return videoBean;
+						}).collect(Collectors.toList()));
+						return courseBean;
+					}).collect(Collectors.toList()));
+				}
 				return courseDetailsBean;
 			}).collect(Collectors.toList());
+
 		} catch (Exception ex) {
 			ex.getMessage();
 		}
 		return courseDetailsBeans;
 	}
-
 }
 
 
