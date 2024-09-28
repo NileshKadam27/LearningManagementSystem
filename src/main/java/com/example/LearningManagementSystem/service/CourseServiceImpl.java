@@ -62,11 +62,11 @@ public class CourseServiceImpl implements CourseService {
     
     private  S3Client s3Client;
     
-    @Value("${aws.s3.bucketName}")
+   // @Value("${aws.s3.bucketName}")
 	private String bucketName;
     
     
-    @Value("${s3.video.link:false}")
+    //@Value("${s3.video.link:false}")
   	private Boolean s3Link;
 
     @Override

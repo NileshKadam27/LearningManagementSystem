@@ -1,5 +1,6 @@
 package com.example.LearningManagementSystem.service;
 
+import com.example.LearningManagementSystem.bean.CustomerUserDetails;
 import com.example.LearningManagementSystem.bean.UserCreationBean;
 import com.example.LearningManagementSystem.bean.UserLoginBean;
 import com.example.LearningManagementSystem.bean.UserResponse;
@@ -92,20 +93,16 @@ public class UserServiceImpl implements UserService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         User user = userRepository.findByUsername(username);
-        return org.springframework.security.core.userdetails.User
-                .builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .roles(getRoles(user))
-                .build();
+        String role = getRole(user);
+        return new CustomerUserDetails(user, role);
     }
 
-    private String[] getRoles(User user) {
+    private String getRole(User user) {
         Optional<Role> optionalRole = roleRepository.findById(user.getRolekey());
         if (!optionalRole.isPresent()) {
-            return new String[]{"user"};
+            return "user";
         }
-        return optionalRole.get().getRolename().split(",");
+        return optionalRole.get().getRolename();
     }
 
 

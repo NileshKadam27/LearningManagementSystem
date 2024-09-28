@@ -19,7 +19,7 @@ public class CourseController {
     @Autowired
     CourseService courseService;
 
-    @PreAuthorize("hasRole('STUDENT','INSTRUCTOR')")
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/details")
     public ResponseEntity<Object> getAllCourseDetails() throws Exception {
         ResponseBean responseBean = new ResponseBean();
@@ -28,7 +28,7 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('STUDENT','INSTRUCTOR')")
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/category/{catid}")
     public ResponseEntity<Object> getCourseDetailsByCategory(@PathVariable Long catid) throws Exception{
         ResponseBean responseBean = new ResponseBean();
@@ -37,7 +37,7 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('STUDENT','INSTRUCTOR')")
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/{courseid}")
     public ResponseEntity<Object> getCourseDetailsById(@PathVariable Long courseid) throws Exception{
         ResponseBean responseBean = new ResponseBean();
