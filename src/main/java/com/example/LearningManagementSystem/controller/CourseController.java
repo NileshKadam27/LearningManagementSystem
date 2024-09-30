@@ -45,4 +45,20 @@ public class CourseController {
         responseBean.setMessage("Course Details.");
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
+
+    @PostMapping("/v1/user/professor/course/register")
+    public ResponseEntity<Object> uploadVideoDetails(@RequestBody CourseDetailsBean courseDetailsBean){
+        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(courseDetailsBean), HttpStatus.OK);
+    }
+    
+    @PutMapping("/v1/user/professor/course/register/{courseKey}")
+    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@RequestParam Long videoId,
+    		@RequestBody CourseBean courseBean){
+        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,courseBean), HttpStatus.OK);
+    }
+
+    @GetMapping("/v1/user/mycourse")
+    public ResponseEntity<Object> getProfCourses(){
+        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
+    }
 }
