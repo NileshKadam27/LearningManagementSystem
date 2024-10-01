@@ -14,13 +14,15 @@ public class Feedback {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Long enrollmentid;
+	private Long courseid;
 
 	private String feedbackcomments;
 
 	private String rating;
 
 	private Integer isactive;
+
+	private Long userKey;
 
 	@CreationTimestamp
 	private LocalDateTime createddt;
@@ -36,12 +38,12 @@ public class Feedback {
 		this.id = id;
 	}
 
-	public Long getEnrollmentid() {
-		return enrollmentid;
+	public Long getCourseid() {
+		return courseid;
 	}
 
-	public void setEnrollmentid(Long enrollmentid) {
-		this.enrollmentid = enrollmentid;
+	public void setCourseid(Long courseid) {
+		this.courseid = courseid;
 	}
 
 	public String getFeedbackcomments() {
@@ -72,6 +74,14 @@ public class Feedback {
 		return createddt;
 	}
 
+	public Long getUserKey() {
+		return userKey;
+	}
+
+	public void setUserKey(Long userKey) {
+		this.userKey = userKey;
+	}
+
 	public void setCreateddt(LocalDateTime createddt) {
 		this.createddt = createddt;
 	}
@@ -83,5 +93,6 @@ public class Feedback {
 	public void setUpdateddt(LocalDateTime updateddt) {
 		this.updateddt = updateddt;
 	}
+
 
 }
