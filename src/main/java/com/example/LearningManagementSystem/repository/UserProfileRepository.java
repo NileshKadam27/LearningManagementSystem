@@ -10,4 +10,5 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 	
 	UserProfile findByUserkey(Long userKey);
 
+    UserProfile findByIdAndIsactive(Long userprofilekey, int i);
 }

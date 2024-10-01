@@ -3,22 +3,14 @@ package com.example.LearningManagementSystem.service;
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.VideoBean;
-import com.example.LearningManagementSystem.entity.Course;
-import com.example.LearningManagementSystem.entity.CourseCategory;
-import com.example.LearningManagementSystem.entity.CourseDetails;
-import com.example.LearningManagementSystem.entity.UserProfile;
-import com.example.LearningManagementSystem.entity.Video;
-import com.example.LearningManagementSystem.entity.VideoDetails;
+import com.example.LearningManagementSystem.entity.*;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.exception.LmsException;
-import com.example.LearningManagementSystem.repository.CourseCategoryRepository;
-import com.example.LearningManagementSystem.repository.CourseDetailsRepository;
-import com.example.LearningManagementSystem.repository.CourseRepository;
-import com.example.LearningManagementSystem.repository.UserProfileRepository;
-import com.example.LearningManagementSystem.repository.VideoDetailsRepository;
-import com.example.LearningManagementSystem.repository.VideoRepository;
+import com.example.LearningManagementSystem.repository.*;
 
+import com.example.LearningManagementSystem.utils.LearningManagementUtils;
 import io.jsonwebtoken.io.IOException;
+import org.springframework.http.HttpHeaders;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -59,6 +51,9 @@ public class CourseServiceImpl implements CourseService {
     
     @Autowired
     private VideoRepository   videoRepository;
+
+	@Autowired
+	private EnrollmentRepository enrollmentRepository;
     
     private  S3Client s3Client;
     
@@ -387,6 +382,40 @@ public class CourseServiceImpl implements CourseService {
 			ex.getMessage();
 		}
 		return courseDetailsBeans;
+
+	}
+
+	@Override
+	public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception {
+
+		List<CourseBean> courseBeanList = new ArrayList<>();
+
+		try {
+			Long userKey = LearningManagementUtils.getUserId();
+
+			List<Enrollment> enrollmentList = enrollmentRepository.findByIdAndIsactive(userKey, 1);
+
+			if (!CollectionUtils.isEmpty(enrollmentList)) {
+
+				for (Enrollment enrollment : enrollmentList) {
+					CourseBean courseBean = new CourseBean();
+					Course course = courseRepository.findByIdAndIsactive(enrollment.getCourseid(), 1);
+					UserProfile userProfile = userProfileRepository.findByIdAndIsactive(course.getUserprofilekey(), 1);
+					courseBean.setCourseName(course.getCoursename());
+					courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+					courseBean.setExperience(userProfile.getExperience());
+					courseBeanList.add(courseBean);
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			throw new LmsException("Exception occur while fetching details", "LMS005",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		return courseBeanList;
 	}
 }
 

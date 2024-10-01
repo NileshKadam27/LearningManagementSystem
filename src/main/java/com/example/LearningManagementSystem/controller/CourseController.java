@@ -6,6 +6,7 @@ import com.example.LearningManagementSystem.bean.ResponseBean;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -67,4 +68,16 @@ public class CourseController {
     public ResponseEntity<Object> getProfCourses(){
         return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
     }
+
+
+    @GetMapping("/v1/course/enrolled")
+    public ResponseEntity<Object> getMyEnrolledCourses(HttpHeaders headers) throws Exception{
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.getMyEnrolledCourses(headers));
+        responseBean.setMessage("Feedback Detail for given course .");
+
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
+    }
+
+
 }
