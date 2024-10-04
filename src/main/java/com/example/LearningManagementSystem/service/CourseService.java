@@ -3,6 +3,8 @@ package com.example.LearningManagementSystem.service;
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.ProfDetBean;
+import com.example.LearningManagementSystem.entity.Enrollment;
+import com.example.LearningManagementSystem.entity.UserVideoprogress;
 import com.example.LearningManagementSystem.exception.LmsException;
 import org.springframework.http.HttpHeaders;
 
@@ -23,4 +25,11 @@ public interface CourseService {
 	public List<CourseDetailsBean> getCoursesDetails();
 
     public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception;
+    
+    public List<CourseBean> getCourseDetailsByName(String coursename);
+    
+    public Enrollment saveEnrollment(Enrollment enrollment) throws Exception;
+    
+    public UserVideoprogress saveUserVideoProgress(UserVideoprogress userVideoprogress, Long courseid) throws Exception;
+    
 }
