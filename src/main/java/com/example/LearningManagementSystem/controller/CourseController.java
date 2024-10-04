@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -53,8 +54,9 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
+    //changed requestBody to ModelAttribute
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(@RequestBody CourseDetailsBean courseDetailsBean){
+    public ResponseEntity<Object> uploadVideoDetails(@ModelAttribute CourseDetailsBean courseDetailsBean){
         return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(courseDetailsBean), HttpStatus.OK);
     }
     
@@ -79,5 +81,6 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
-
+    
+    
 }

@@ -55,13 +55,14 @@ public class CourseServiceImpl implements CourseService {
 	@Autowired
 	private EnrollmentRepository enrollmentRepository;
     
+	@Autowired
     private  S3Client s3Client;
     
-   // @Value("${aws.s3.bucketName}")
+    @Value("${aws.s3.bucketName}")
 	private String bucketName;
     
     
-    //@Value("${s3.video.link:false}")
+    @Value("${s3.video.link:false}")
   	private Boolean s3Link;
 
     @Override
@@ -254,7 +255,7 @@ public class CourseServiceImpl implements CourseService {
 	@Override
 	public CourseBean updateVideoDetails(Long courseKey, Long videoId, CourseBean courseBean) {
 		try {
-			Long userKey = 1L;
+			Long userKey = LearningManagementUtils.getUserId();
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Optional<Course> course = courseRepository.findById(courseKey);
 			if (course.isPresent()) {
@@ -348,7 +349,7 @@ public class CourseServiceImpl implements CourseService {
 	public List<CourseDetailsBean> getCoursesDetails() {
 		List<CourseDetailsBean> courseDetailsBeans = new ArrayList<>();
 		try {
-			Long userKey = 1L;
+			Long userKey = LearningManagementUtils.getUserId();
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
