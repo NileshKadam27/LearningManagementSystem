@@ -2,6 +2,7 @@ package com.example.LearningManagementSystem.controller;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
+import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.bean.ResponseBean;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
@@ -56,17 +57,17 @@ public class CourseController {
 
     //changed requestBody to ModelAttribute
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(@ModelAttribute CourseDetailsBean courseDetailsBean){
-        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(courseDetailsBean), HttpStatus.OK);
+    public ResponseEntity<Object> uploadVideoDetails(@ModelAttribute ProfDetBean profDetBean){
+        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(profDetBean), HttpStatus.OK);
     }
     
-    @PutMapping("/v1/user/professor/course/register/{courseKey}")
-    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@RequestParam Long videoId,
-    		@RequestBody CourseBean courseBean){
-        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,courseBean), HttpStatus.OK);
+    @PutMapping("/v1/user/professor/course/register/{courseKey}/video/{videoId}")
+    public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@PathVariable Long videoId,
+    		@ModelAttribute ProfDetBean profDetBean){
+        return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
 
-    @GetMapping("/v1/user/mycourse")
+    @GetMapping("/v1/user/professor/course/mycourse")
     public ResponseEntity<Object> getProfCourses(){
         return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
     }

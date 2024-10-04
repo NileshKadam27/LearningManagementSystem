@@ -2,6 +2,7 @@ package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
+import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.exception.LmsException;
 import org.springframework.http.HttpHeaders;
 
@@ -15,9 +16,9 @@ public interface CourseService {
 
     public CourseBean getCourseDetailsById(Long courseid) throws Exception;
     
-	public CourseDetailsBean uploadVideoDetails(CourseDetailsBean courseDetailsBean);
+	public ProfDetBean uploadVideoDetails(ProfDetBean profDetBean);
 
-	public CourseBean updateVideoDetails(Long courseKey, Long videoId, CourseBean courseBean);
+	public ProfDetBean updateVideoDetails(Long courseKey, Long videoId,  ProfDetBean profDetBean);
 
 	public List<CourseDetailsBean> getCoursesDetails();
 

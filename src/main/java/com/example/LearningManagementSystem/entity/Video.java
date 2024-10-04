@@ -52,12 +52,12 @@ public class Video {
 		this.videolink = videolink;
 	}
 
-	public String getVideotile() {
+	public String getVideotitle() {
 		return videotitle;
 	}
 
-	public void setVideotile(String videotile) {
-		this.videotitle = videotile;
+	public void setVideotitle(String videotitle) {
+		this.videotitle = videotitle;
 	}
 
 	public String getVideoduration() {

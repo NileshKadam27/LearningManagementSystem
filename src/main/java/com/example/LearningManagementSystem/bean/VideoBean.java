@@ -11,6 +11,8 @@ public class VideoBean {
 	private String videoTitle;
 
 	private String videoDuration;
+	
+	private String videoDescription;
 
 	private MultipartFile videoFile;
 
@@ -53,5 +55,15 @@ public class VideoBean {
 	public void setVideoFile(MultipartFile videoFile) {
 		this.videoFile = videoFile;
 	}
+
+	public String getVideoDescription() {
+		return videoDescription;
+	}
+
+	public void setVideoDescription(String videoDescription) {
+		this.videoDescription = videoDescription;
+	}
+	
+	
 
 }
