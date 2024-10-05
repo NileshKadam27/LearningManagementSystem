@@ -11,6 +11,8 @@ import com.example.LearningManagementSystem.repository.*;
 
 import com.example.LearningManagementSystem.utils.LearningManagementUtils;
 import io.jsonwebtoken.io.IOException;
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.http.HttpHeaders;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -55,6 +57,9 @@ public class CourseServiceImpl implements CourseService {
 
 	@Autowired
 	private EnrollmentRepository enrollmentRepository;
+	
+	@Autowired
+	UserVideoprogressRepository userVideoprogressRepository;
     
 	@Autowired
     private  S3Client s3Client;
@@ -513,7 +518,80 @@ public class CourseServiceImpl implements CourseService {
 		String url = "https://" + bcktName + ".s3.amazonaws.com/" + fileName;
 		return url;
 	}
+
+
+	@Override
+	public List<CourseBean> getCourseDetailsByName(String coursename) {
+		List<CourseBean> courseBeanList = new ArrayList<>();
+		try {
+			List<Course> courseList = courseRepository.findByCoursenameAndIsactive(coursename, 1);
+
+			if (courseList != null && !courseList.isEmpty()) {
+				courseBeanList = courseList.stream().map(course -> {
+					CourseBean courseBean = new CourseBean();
+					courseBean.setCourseName(course.getCoursename());
+					courseBean.setCourseId(course.getId());
+					Optional<UserProfile> optionalUserProfile;
+					try {
+						optionalUserProfile = Optional.ofNullable(getUserDetails(course.getUserprofilekey()));
+						optionalUserProfile.ifPresent(userProfile -> {
+							courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
+							courseBean.setExperience(userProfile.getExperience());
+						});
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return courseBean;
+				}).collect(Collectors.toList());
+			}
+		} catch (Exception e) {
+			e.getMessage();
+		}
+		return courseBeanList;
+	}
 	
+	@Override
+	public Enrollment saveEnrollment(Enrollment enrollment) throws Exception {
+		try {
+			if (enrollment != null) {
+				Long id = enrollment.getCourseid();
+				Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(id, 1));
+				if (course.isPresent()) {
+					enrollment.setUserkey(course.get().getUserprofilekey());
+				}
+			}
+			return enrollmentRepository.save(enrollment);
+		} catch (Exception e) {
+			throw new LmsException("An unexpected error occurred, while enrolling into course", "LMS006",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public UserVideoprogress saveUserVideoProgress(UserVideoprogress userVideoprogress, Long courseid)
+			throws Exception {
+		if (courseid == null) {
+			throw new IllegalArgumentException("Course ID cannot be null.");
+		}
+		
+		try {
+			Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(courseid, 1));
+
+			if (course.isPresent()) {
+				userVideoprogress.setUserkey(course.get().getUserprofilekey());
+			} else {
+				throw new EntityNotFoundException("Course not found or inactive.");
+			}
+
+			return userVideoprogressRepository.save(userVideoprogress);
+		} catch (Exception e) {
+			e.getMessage();
+
+			throw new LmsException("An unexpected error occurred, saving User Video Progress", "LMS006",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	
 }
 

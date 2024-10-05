@@ -4,8 +4,13 @@ import com.example.LearningManagementSystem.bean.CourseBean;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.bean.ResponseBean;
+import com.example.LearningManagementSystem.entity.Enrollment;
+import com.example.LearningManagementSystem.entity.UserVideoprogress;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -71,7 +76,17 @@ public class CourseController {
     public ResponseEntity<Object> getProfCourses(){
         return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
     }
-
+    
+    @GetMapping("/v1/course/{coursename}")
+  	public ResponseEntity<Object> getCourseDetailsByName(@PathVariable String coursename) {
+  		List<CourseBean> coursebeanlist = courseService.getCourseDetailsByName(coursename);
+  		if (coursebeanlist != null) {
+  			return ResponseHandler.responseEntity("All Matching Course Details Retrieved Successfully", coursebeanlist,
+  					HttpStatus.OK);
+  		} else {
+  			return ResponseEntity.notFound().build();
+  		}
+  	}
 
     @GetMapping("/v1/course/enrolled")
     public ResponseEntity<Object> getMyEnrolledCourses(HttpHeaders headers) throws Exception{
@@ -81,7 +96,18 @@ public class CourseController {
 
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
-
     
+    @PostMapping("v1/user/enroll/course")
+	public ResponseEntity<Object> enrollCourse(@RequestBody Enrollment enrollment) throws Exception {
+		return ResponseHandler.responseEntity("Course Enrolled Successfully", courseService.saveEnrollment(enrollment), HttpStatus.OK);
+	}
+    
+	@PostMapping("v1/user/course/{courseid}")
+	public ResponseEntity<Object> saveVideoProgress(@RequestBody UserVideoprogress userVideoprogress,
+			@PathVariable Long courseid) throws Exception {
+		return ResponseHandler.responseEntity("User video progress updated successfully",
+				courseService.saveUserVideoProgress(userVideoprogress, courseid), HttpStatus.OK);
+	}
+      
     
 }
