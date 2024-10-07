@@ -5,6 +5,7 @@ import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.entity.Enrollment;
 import com.example.LearningManagementSystem.entity.UserVideoprogress;
+import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.exception.LmsException;
 import org.springframework.http.HttpHeaders;
 
@@ -32,4 +33,5 @@ public interface CourseService {
     
     public UserVideoprogress saveUserVideoProgress(UserVideoprogress userVideoprogress, Long courseid) throws Exception;
     
+    public ProfDetBean addVideoDetails(Long courseKey, ProfDetBean profDetBean) throws EntityDataNotFound;
 }

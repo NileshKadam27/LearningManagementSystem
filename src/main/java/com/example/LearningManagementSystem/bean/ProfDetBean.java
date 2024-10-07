@@ -4,6 +4,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class ProfDetBean {
 
+	private Long courseId;
+
+	private Long videoId;
+	
 	private String courseCategory;
 
 	private String courseName;
@@ -125,6 +129,22 @@ public class ProfDetBean {
 
 	public void setVideoDescription(String videoDescription) {
 		this.videoDescription = videoDescription;
+	}
+
+	public Long getCourseId() {
+		return courseId;
+	}
+
+	public void setCourseId(Long courseId) {
+		this.courseId = courseId;
+	}
+
+	public Long getVideoId() {
+		return videoId;
+	}
+
+	public void setVideoId(Long videoId) {
+		this.videoId = videoId;
 	}
 	
 	

@@ -6,6 +6,7 @@ import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.bean.ResponseBean;
 import com.example.LearningManagementSystem.entity.Enrollment;
 import com.example.LearningManagementSystem.entity.UserVideoprogress;
+import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.service.CourseService;
 import com.example.LearningManagementSystem.utils.ResponseHandler;
 
@@ -107,6 +108,12 @@ public class CourseController {
 		return ResponseHandler.responseEntity("User video progress updated successfully",
 				courseService.saveUserVideoProgress(userVideoprogress, courseid), HttpStatus.OK);
 	}
+	
+	@PutMapping("/v1/user/professor/course/{courseKey}/video")
+    public ResponseEntity<Object> AddVideoDetails(@PathVariable Long courseKey,
+    		 ProfDetBean profDetBean) throws EntityDataNotFound{
+        return ResponseHandler.responseEntity("update Video Details",courseService.addVideoDetails(courseKey,profDetBean), HttpStatus.OK);
+    }
       
     
 }
