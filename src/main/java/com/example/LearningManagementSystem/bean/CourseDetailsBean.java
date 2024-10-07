@@ -3,6 +3,8 @@ package com.example.LearningManagementSystem.bean;
 import java.util.List;
 
 public class CourseDetailsBean {
+	
+	private int id;
 
     private String courseCategory;
 
@@ -23,4 +25,14 @@ public class CourseDetailsBean {
     public void setCourseDetailList(List<CourseBean> courseDetailList) {
         this.courseDetailList = courseDetailList;
     }
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+    
+    
 }

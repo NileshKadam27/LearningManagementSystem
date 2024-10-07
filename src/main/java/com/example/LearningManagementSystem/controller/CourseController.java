@@ -60,21 +60,20 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
-    //changed requestBody to ModelAttribute
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(@ModelAttribute ProfDetBean profDetBean){
+    public ResponseEntity<Object> uploadVideoDetails( ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(profDetBean), HttpStatus.OK);
     }
     
-    @PutMapping("/v1/user/professor/course/register/{courseKey}/video/{videoId}")
+    @PutMapping("/v1/user/professor/course/{courseKey}/video/{videoId}")
     public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@PathVariable Long videoId,
-    		@ModelAttribute ProfDetBean profDetBean){
+    		 ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
 
     @GetMapping("/v1/user/professor/course/mycourse")
     public ResponseEntity<Object> getProfCourses(){
-        return ResponseHandler.responseEntity("Courses Detail for given Category",courseService.getCoursesDetails(), HttpStatus.OK);
+    	return new  ResponseEntity<Object>(courseService.getCoursesDetails(), HttpStatus.OK);
     }
     
     @GetMapping("/v1/course/{coursename}")

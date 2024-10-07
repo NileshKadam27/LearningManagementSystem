@@ -211,12 +211,13 @@ public class CourseServiceImpl implements CourseService {
 			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
-			
+			int count =1;
 			for(Long value:categoryId) {
 				
 				CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
 				Optional<CourseCategory> category=courseCategoryRepository.findById(value);
 				if(category.isPresent()) {
+					courseDetailsBean.setId(count);
 					courseDetailsBean.setCourseCategory(category.get().getCategoryname());
 					List<Course> coursess = courseRepository.findByCoursecategorykey(value);
 					courseDetailsBean.setCourseDetailList(coursess.stream().map(course->{
@@ -250,7 +251,7 @@ public class CourseServiceImpl implements CourseService {
 				
 				
 				courseDetailsBeans.add(courseDetailsBean);
-				
+				count++;
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
@@ -260,46 +261,7 @@ public class CourseServiceImpl implements CourseService {
 		}
 			
 			
-			
-//			courseDetailsBeans = categoryId.stream().map(catId -> {
-//				CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
-//				courseDetailsBean.setCourseCategory(courseCategoryRepository.findById(catId).get().getCategoryname());
-//				List<Course> coursess = courseRepository.findByCoursecategorykey(catId);
-//				if (!coursess.isEmpty()) {
-//					
-//					
-//				}
-//					
-			
-					
-					
-//					courseDetailsBean.setCourseDetailList(courses.stream().map(course -> {
-//
-//						CourseBean courseBean = new CourseBean();
-//						courseBean.setCoursedescription(course.getCoursedescription());
-//						courseBean.setCourseName(course.getCoursename());
-//						courseBean.setExperience(userProfile.getExperience());
-//						courseBean.setUserprofilekey(userProfile.getId());
-//						
-//						courseBean.setVideoBean(videoRepository.findByCourseid(course.getId()).stream().map(video -> {
-//							VideoBean videoBean = new VideoBean();
-//							videoBean.setVideoId(video.getId());
-//							videoBean.setVideoLink(video.getVideolink());
-//							videoBean.setVideoTitle(video.getVideotitle());
-//							return videoBean;
-//						}).collect(Collectors.toList()));
-//						return courseBean;
-//					}).collect(Collectors.toList()));
-//				}
-//				return courseDetailsBean;
-//			}).collect(Collectors.toList());
-
-//		} catch (Exception ex) {
-//			ex.getMessage();
-//		}
-//		return courseDetailsBeans;
-//
-//	}
+		
 
 	@Override
 	public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception {
@@ -338,8 +300,8 @@ public class CourseServiceImpl implements CourseService {
 	public ProfDetBean uploadVideoDetails(ProfDetBean profDetBean) {
 		ProfDetBean profDetResponse = new ProfDetBean();
 		try {
-//			Long userKey = LearningManagementUtils.getUserId();
-			Long userKey =1l;
+			Long userKey = LearningManagementUtils.getUserId();
+//			Long userKey =1l;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			CourseCategory courseCat=null;
 			CourseCategory courseCategory = new CourseCategory();
@@ -417,8 +379,8 @@ public class CourseServiceImpl implements CourseService {
 		ProfDetBean ProfDetails = new ProfDetBean();
 
 		try {
-//			Long userKey = LearningManagementUtils.getUserId();
-			Long userKey =1l;
+			Long userKey = LearningManagementUtils.getUserId();
+//			Long userKey =1l;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Optional<Course> courseById = courseRepository.findById(courseId);
 			Course courseFromDB;
