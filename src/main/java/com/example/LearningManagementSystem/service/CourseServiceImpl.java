@@ -302,7 +302,6 @@ public class CourseServiceImpl implements CourseService {
 		ProfDetBean profDetResponse = new ProfDetBean();
 		try {
 			Long userKey = LearningManagementUtils.getUserId();
-//			Long userKey =1l;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			CourseCategory courseCat=null;
 			CourseCategory courseCategory = new CourseCategory();
@@ -325,6 +324,7 @@ public class CourseServiceImpl implements CourseService {
 			course.setUserprofilekey(userProfile.getId() != null ? userProfile.getId() : null);
 			course.setCoursedescription(profDetBean.getCourseDescription());
 			course.setCoursename(profDetBean.getCourseName());
+			course.setIsactive(1);
 			Course courseFromDB = courseRepository.save(course);
 
 			// upload video on s3 and link
@@ -522,6 +522,7 @@ public class CourseServiceImpl implements CourseService {
 				Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(id, 1));
 				if (course.isPresent()) {
 					enrollment.setUserkey(course.get().getUserprofilekey());
+					enrollment.setIsactive(1);
 				}
 			}
 			return enrollmentRepository.save(enrollment);
@@ -543,6 +544,7 @@ public class CourseServiceImpl implements CourseService {
 
 			if (course.isPresent()) {
 				userVideoprogress.setUserkey(course.get().getUserprofilekey());
+				userVideoprogress.setIsactive(1);
 			} else {
 				throw new EntityNotFoundException("Course not found or inactive.");
 			}

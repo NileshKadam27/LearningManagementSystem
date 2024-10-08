@@ -76,6 +76,7 @@ public class UserServiceImpl implements UserService {
         userProfile.setMobile(userCreationBean.getMobile());
         userProfile.setUserkey(user.getId());
         userProfile.setExperience(userCreationBean.getExperience());
+        userProfile.setIsactive(1);
         userProfileRepository.save(userProfile);
     }
 
@@ -85,6 +86,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userCreationBean.getPassword()));
         Role role = roleRepository.findByRolename(userCreationBean.getRoleCode());
         user.setRolekey(role.getId());
+        user.setIsactive(1);
         user = userRepository.save(user);
         return user;
     }

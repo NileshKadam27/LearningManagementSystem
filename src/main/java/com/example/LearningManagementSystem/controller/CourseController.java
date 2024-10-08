@@ -1,7 +1,6 @@
 package com.example.LearningManagementSystem.controller;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
-import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.bean.ResponseBean;
 import com.example.LearningManagementSystem.entity.Enrollment;
@@ -19,12 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,7 +59,7 @@ public class CourseController {
     }
 
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails( ProfDetBean profDetBean){
+    public ResponseEntity<Object> uploadVideoDetails(@RequestBody ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(profDetBean), HttpStatus.OK);
     }
     
@@ -97,12 +94,12 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
     
-    @PostMapping("v1/user/enroll/course")
+    @PostMapping("/v1/user/enroll/course")
 	public ResponseEntity<Object> enrollCourse(@RequestBody Enrollment enrollment) throws Exception {
 		return ResponseHandler.responseEntity("Course Enrolled Successfully", courseService.saveEnrollment(enrollment), HttpStatus.OK);
 	}
     
-	@PostMapping("v1/user/course/{courseid}")
+	@PostMapping("/v1/user/course/{courseid}")
 	public ResponseEntity<Object> saveVideoProgress(@RequestBody UserVideoprogress userVideoprogress,
 			@PathVariable Long courseid) throws Exception {
 		return ResponseHandler.responseEntity("User video progress updated successfully",
