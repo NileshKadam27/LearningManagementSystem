@@ -1,7 +1,9 @@
 package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.UserLoginBean;
+import com.example.LearningManagementSystem.exception.LmsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,7 @@ public class AuthenticationService {
     @Autowired
     private JwtService jwtService;
 
-    public Map<String,Object> userAuthentication(UserLoginBean userLoginBean){
+    public Map<String,Object> userAuthentication(UserLoginBean userLoginBean) throws LmsException {
         Map<String,Object> tokenMap = new HashMap<>();
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -35,7 +37,7 @@ public class AuthenticationService {
                 tokenMap.put("role",roles);
             }
         }catch (Exception e){
-
+            throw new LmsException("Incorrect password.","LMS-401", HttpStatus.UNAUTHORIZED);
         }
         return tokenMap;
 
