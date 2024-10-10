@@ -34,6 +34,8 @@ public class ProfDetBean {
 
 	private MultipartFile videoFile;
 
+	private MultipartFile courseImage;
+
 	public String getCourseCategory() {
 		return courseCategory;
 	}
@@ -146,8 +148,12 @@ public class ProfDetBean {
 	public void setVideoId(Long videoId) {
 		this.videoId = videoId;
 	}
-	
-	
-	
 
+	public MultipartFile getCourseImage() {
+		return courseImage;
+	}
+
+	public void setCourseImage(MultipartFile courseImage) {
+		this.courseImage = courseImage;
+	}
 }

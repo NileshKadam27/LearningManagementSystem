@@ -23,6 +23,8 @@ public class Course {
 	@Column(length = 10000)
 	private String coursedescription;
 
+	private String courseimagelink;
+
 	private Integer isactive;
 
 	@CreationTimestamp
@@ -95,6 +97,11 @@ public class Course {
 		this.updateddt = updateddt;
 	}
 
-	
-	
+	public String getCourseimagelink() {
+		return courseimagelink;
+	}
+
+	public void setCourseimagelink(String courseimagelink) {
+		this.courseimagelink = courseimagelink;
+	}
 }

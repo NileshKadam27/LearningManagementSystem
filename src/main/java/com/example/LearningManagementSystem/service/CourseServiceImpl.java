@@ -226,6 +226,7 @@ public class CourseServiceImpl implements CourseService {
 						courseBean.setCourseName(course.getCoursename());
 						courseBean.setExperience(userProfile.getExperience());
 						courseBean.setCoursedescription(course.getCoursedescription());
+						courseBean.setCourseImageLink(course.getCourseimagelink());
 
 						List<Video> videos = videoRepository.findByCourseid(course.getId());
 						List<VideoBean> vid = new ArrayList<>();
@@ -321,6 +322,10 @@ public class CourseServiceImpl implements CourseService {
 			course.setCoursedescription(profDetBean.getCourseDescription());
 			course.setCoursename(profDetBean.getCourseName());
 			course.setIsactive(1);
+			if (s3Link) {
+				String url = uploadVideo(profDetBean.getCourseImage());
+				course.setCourseimagelink(url);
+			}
 			Course courseFromDB = courseRepository.save(course);
 			profDetResponse = mapUploadVidDets(courseFromDB, null, null, userProfile,
 					courseCat.getCategoryname());

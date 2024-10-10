@@ -15,6 +15,8 @@ public class CourseBean {
     private String about;
 
     private String videoLink;
+
+    private String courseImageLink;
     
     
 	private Long userprofilekey;
@@ -96,6 +98,12 @@ public class CourseBean {
 	public void setVideoBean(List<VideoBean> videoBean) {
 		this.videoBean = videoBean;
 	}
-    
-    
+
+    public String getCourseImageLink() {
+        return courseImageLink;
+    }
+
+    public void setCourseImageLink(String courseImageLink) {
+        this.courseImageLink = courseImageLink;
+    }
 }
