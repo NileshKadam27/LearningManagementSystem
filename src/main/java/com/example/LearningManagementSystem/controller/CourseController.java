@@ -60,8 +60,8 @@ public class CourseController {
 
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(ProfDetBean profDetBean){
-        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(profDetBean), HttpStatus.OK);
+    public ResponseEntity<Object> uploadCourseDetails(ProfDetBean profDetBean){
+        return ResponseHandler.responseEntity("upload Video Details",courseService.uploadCourseDetails(profDetBean), HttpStatus.OK);
     }
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @PutMapping("/v1/user/professor/course/{courseKey}/video/{videoId}")
@@ -71,7 +71,7 @@ public class CourseController {
     }
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @GetMapping("/v1/user/professor/course/mycourse")
-    public ResponseEntity<Object> getProfCourses(){
+    public ResponseEntity<Object> getAllCourses(){
     	return new  ResponseEntity<Object>(courseService.getCoursesDetails(), HttpStatus.OK);
     }
     

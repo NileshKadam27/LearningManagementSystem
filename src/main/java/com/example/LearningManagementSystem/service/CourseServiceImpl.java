@@ -211,54 +211,60 @@ public class CourseServiceImpl implements CourseService {
 			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
-			int count =1;
-			for(Long value:categoryId) {
-				
+			int count = 1;
+			for (Long value : categoryId) {
+
 				CourseDetailsBean courseDetailsBean = new CourseDetailsBean();
-				Optional<CourseCategory> category=courseCategoryRepository.findById(value);
-				if(category.isPresent()) {
+				Optional<CourseCategory> category = courseCategoryRepository.findById(value);
+				if (category.isPresent()) {
 					courseDetailsBean.setId(count);
 					courseDetailsBean.setCourseCategory(category.get().getCategoryname());
 					List<Course> coursess = courseRepository.findByCoursecategorykey(value);
-					courseDetailsBean.setCourseDetailList(coursess.stream().map(course->{
-						CourseBean courseBean=new CourseBean();
+					courseDetailsBean.setCourseDetailList(coursess.stream().map(course -> {
+						CourseBean courseBean = new CourseBean();
 						courseBean.setCourseId(course.getId());
 						courseBean.setCourseName(course.getCoursename());
 						courseBean.setExperience(userProfile.getExperience());
-					
-						List<VideoDetails> videoDetForCourseDesc= videoDetailsRepository.findByCourseId(course.getId());
-						if(!videoDetForCourseDesc.isEmpty()) {
+
+						List<VideoDetails> videoDetForCourseDesc = videoDetailsRepository
+								.findByCourseId(course.getId());
+						if (!videoDetForCourseDesc.isEmpty()) {
 							courseBean.setCoursedescription(videoDetForCourseDesc.get(0).getCourseDescription());
 						}
-				
-						courseBean.setVideoBean(videoRepository.findByCourseid(course.getId()).stream().sorted(Comparator.comparing(Video::getId)).map(video->{
-							VideoBean videoBean=new VideoBean();
+
+						List<CourseBean> ces = new ArrayList<>();
+						List<Video> videos = videoRepository.findByCourseid(course.getId());
+						List<VideoBean> vid = new ArrayList<>();
+						for (Video video : videos) {
+							VideoBean videoBean = new VideoBean();
 							videoBean.setVideoId(video.getId());
 							videoBean.setVideoLink(video.getVideolink());
 							videoBean.setVideoTitle(video.getVideotitle());
-							Optional<VideoDetails> videoDetForVideoDesc= videoDetailsRepository.findByvideoId(video.getId());
-							if(videoDetForVideoDesc.isPresent()) {
+							Optional<VideoDetails> videoDetForVideoDesc = videoDetailsRepository
+									.findByvideoId(video.getId());
+							if (videoDetForVideoDesc.isPresent()) {
 								videoBean.setVideoDescription(videoDetForVideoDesc.get().getVideoDescription());
 							}
-							return videoBean;
-						}).collect(Collectors.toList()));
+							vid.add(videoBean);
+						}
+
+						courseBean.setVideoBean(vid);
 						
-						
-						
+		
+
 						return courseBean;
 					}).collect(Collectors.toList()));
 				}
-				
-				
+
 				courseDetailsBeans.add(courseDetailsBean);
 				count++;
 			}
-		}catch(Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-			
-			return courseDetailsBeans;
-		}
+
+		return courseDetailsBeans;
+	}
 			
 			
 		
@@ -297,7 +303,7 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	@Override
-	public ProfDetBean uploadVideoDetails(ProfDetBean profDetBean) {
+	public ProfDetBean uploadCourseDetails(ProfDetBean profDetBean) {
 		ProfDetBean profDetResponse = new ProfDetBean();
 		try {
 			Long userKey = LearningManagementUtils.getUserId();

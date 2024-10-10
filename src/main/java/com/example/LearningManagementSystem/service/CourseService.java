@@ -19,7 +19,7 @@ public interface CourseService {
 
     public CourseBean getCourseDetailsById(Long courseid) throws Exception;
     
-	public ProfDetBean uploadVideoDetails(ProfDetBean profDetBean);
+	public ProfDetBean uploadCourseDetails(ProfDetBean profDetBean);
 
 	public ProfDetBean updateVideoDetails(Long courseKey, Long videoId,  ProfDetBean profDetBean);
 
