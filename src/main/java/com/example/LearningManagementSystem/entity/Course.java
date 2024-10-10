@@ -19,6 +19,7 @@ public class Course {
 	private String coursename;
 	
 	private Long userprofilekey;
+	
 	@Column(length = 10000)
 	private String coursedescription;
 
