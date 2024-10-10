@@ -227,7 +227,6 @@ public class CourseServiceImpl implements CourseService {
 						courseBean.setExperience(userProfile.getExperience());
 						courseBean.setCoursedescription(course.getCoursedescription());
 
-						List<CourseBean> ces = new ArrayList<>();
 						List<Video> videos = videoRepository.findByCourseid(course.getId());
 						List<VideoBean> vid = new ArrayList<>();
 						for (Video video : videos) {
@@ -379,30 +378,22 @@ public class CourseServiceImpl implements CourseService {
 				throw new EntityDataNotFound("Course Details not found");
 			}
 
-			Optional<Video> videoById = videoRepository.findById(videoId);
+			Optional<Video> video = videoRepository.findById(videoId);
 			Video videoFromDB;
-			VideoDetails videoDetsFromMongo = null;
-			if (videoById.isPresent()) {
-				// update video dets in postgres
-				videoFromDB = updateVideoDetails(courseFromDB.getId(), videoById.get(), profDetails);
-				// update mongo details
-				Optional<VideoDetails> videodets = videoDetailsRepository.findByvideoId(videoFromDB.getId());
-				if (videodets.isPresent()) {
-
-					videodets.get().setCourseId(courseId);
-					if (profDetails.getCourseDescription() != null) {
-						videodets.get().setCourseDescription(profDetails.getCourseDescription());
-					}
-					if (profDetails.getVideoDescription() != null) {
-						videodets.get().setVideoDescription(profDetails.getVideoDescription());
-						videoDetsFromMongo = videoDetailsRepository.save(videodets.get());
-					}
-				}
+		if(video.isPresent()) {
+			video.get().setVideotitle(profDetails.getVideoTitle());
+			video.get().setVideoDescription(profDetails.getVideoDescription());
+			video.get().setVideoduration(profDetails.getVideoDuration());
+			if (s3Link) {
+				String url = uploadVideo(profDetails.getVideoFile());
+				video.get().setVideolink(url);
+			}
+			videoFromDB = videoRepository.save(video.get());
 			} else {
 				throw new EntityDataNotFound("Video Details not found");
 			}
 
-			ProfDetails = mapUploadVidDets(courseFromDB, videoFromDB, videoDetsFromMongo, userProfile,
+			ProfDetails = mapUploadVidDets(courseFromDB, videoFromDB, null, userProfile,
 					courseCat.getCategoryname());
 
 		} catch (Exception ex) {
@@ -537,12 +528,13 @@ public class CourseServiceImpl implements CourseService {
 	
 	@Override
 	public ProfDetBean addVideoDetails(Long courseKey, ProfDetBean profDetBean) throws EntityDataNotFound  {
-		ProfDetBean profDetResponse = null;
+		ProfDetBean profDetResponse = new ProfDetBean();
 		try {
 			if (profDetBean.getVideoId() != null) {
 				Video video = videoRepository.findByIdAndCourseid(profDetBean.getVideoId(), courseKey);
-				video.setVideotitle(bucketName);
-				video.setVideoduration(bucketName);
+				video.setVideotitle(profDetBean.getVideoTitle());
+				video.setVideoduration(profDetBean.getVideoDuration());
+				video.setVideoDescription(profDetBean.getVideoDescription());
 				if (s3Link) {
 					String url = uploadVideo(profDetBean.getVideoFile());
 					video.setVideolink(url);
@@ -551,12 +543,8 @@ public class CourseServiceImpl implements CourseService {
 				profDetResponse.setVideoTitle(videoFormDB.getVideotitle());
 				profDetResponse.setVideoLink(videoFormDB.getVideolink());
 				profDetResponse.setVideoDuration(videoFormDB.getVideoduration());
-				Optional<VideoDetails> videoDetails = videoDetailsRepository.findByvideoId(profDetBean.getVideoId());
-				if (videoDetails.isPresent()) {
-					videoDetails.get().setVideoDescription(profDetBean.getVideoDescription());
-					VideoDetails videoDetsFromMongo = videoDetailsRepository.save(videoDetails.get());
-					profDetResponse.setVideoDescription(videoDetsFromMongo.getVideoDescription());
-				}
+				profDetResponse.setVideoDescription(videoFormDB.getVideoDescription());
+				
 			}else {
 				String url = null;
 				if (s3Link) {
@@ -569,16 +557,16 @@ public class CourseServiceImpl implements CourseService {
 				video.setVideolink(url);
 				video.setVideotitle(profDetBean.getVideoTitle());
 				video.setVideoduration(profDetBean.getVideoDuration());
+				video.setVideoDescription(profDetBean.getVideoDescription());
 				Video videoFromDB = videoRepository.save(video);
-
+				
+				
+				profDetResponse.setVideoTitle(videoFromDB.getVideotitle());
+				profDetResponse.setVideoLink(videoFromDB.getVideolink());
+				profDetResponse.setVideoDuration(videoFromDB.getVideoduration());
+				profDetResponse.setVideoDescription(videoFromDB.getVideoDescription());
+				profDetResponse.setVideoLink(videoFromDB.getVideolink());
 				// save video dets into mongo
-				VideoDetails videoDetails = new VideoDetails();
-				videoDetails.setCourseId(courseKey);
-				videoDetails.setCourseDescription(profDetBean.getCourseDescription());
-				videoDetails.setVideoDescription(profDetBean.getVideoDescription());
-				videoDetails.setVideoLink(url);
-				videoDetails.setVideoId(videoFromDB.getId());
-				VideoDetails VideoDetsFromMongo = videoDetailsRepository.save(videoDetails);
 				
 			}
 		} catch (Exception ex) {

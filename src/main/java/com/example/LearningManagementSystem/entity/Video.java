@@ -21,6 +21,9 @@ public class Video {
 	private String videotitle;
 	
 	private String videoduration;
+	
+	@Column(length = 10000)
+	private String videoDescription;
 
 	@CreationTimestamp
 	private LocalDateTime createddt;
@@ -83,4 +86,14 @@ public class Video {
 	public void setUpdateddt(LocalDateTime updateddt) {
 		this.updateddt = updateddt;
 	}
+
+	public String getVideoDescription() {
+		return videoDescription;
+	}
+
+	public void setVideoDescription(String videoDescription) {
+		this.videoDescription = videoDescription;
+	}
+	
+	
 }
