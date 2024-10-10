@@ -22,7 +22,7 @@ public class Feedback {
 
 	private Integer isactive;
 
-	private Long userKey;
+	private Long userkey;
 
 	@CreationTimestamp
 	private LocalDateTime createddt;
@@ -74,12 +74,12 @@ public class Feedback {
 		return createddt;
 	}
 
-	public Long getUserKey() {
-		return userKey;
+	public Long getUserkey() {
+		return userkey;
 	}
 
-	public void setUserKey(Long userKey) {
-		this.userKey = userKey;
+	public void setUserkey(Long userkey) {
+		this.userkey = userkey;
 	}
 
 	public void setCreateddt(LocalDateTime createddt) {

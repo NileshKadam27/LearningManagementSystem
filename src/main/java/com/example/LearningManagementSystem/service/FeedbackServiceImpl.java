@@ -30,7 +30,7 @@ public class FeedbackServiceImpl implements FeedbackService  {
                     FeedbackBean feedbackBean = new FeedbackBean();
                     feedbackBean.setComments(feedback.getFeedbackcomments());
                     feedbackBean.setRating(feedback.getRating());
-                    feedbackBean.setUserkey(feedback.getUserKey());
+                    feedbackBean.setUserkey(feedback.getUserkey());
                     feedbackBeanList.add(feedbackBean);
                 }
 
@@ -58,7 +58,7 @@ public class FeedbackServiceImpl implements FeedbackService  {
             feedback.setRating(feedbackBean.getRating());
             feedback.setFeedbackcomments(feedbackBean.getComments());
             feedback.setCourseid(feedbackBean.getCourseId());
-            feedback.setUserKey(userKey);
+            feedback.setUserkey(userKey);
             feedback.setIsactive(1);
             feedbackRepository.save(feedback);
             response = "Feedback saved successfully";

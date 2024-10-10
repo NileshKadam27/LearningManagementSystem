@@ -58,17 +58,18 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @PostMapping("/v1/user/professor/course/register")
-    public ResponseEntity<Object> uploadVideoDetails(@RequestBody ProfDetBean profDetBean){
+    public ResponseEntity<Object> uploadVideoDetails(ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("upload Video Details",courseService.uploadVideoDetails(profDetBean), HttpStatus.OK);
     }
-    
+    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @PutMapping("/v1/user/professor/course/{courseKey}/video/{videoId}")
     public ResponseEntity<Object> updateVideoDetails(@PathVariable Long courseKey,@PathVariable Long videoId,
     		 ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
-
+    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @GetMapping("/v1/user/professor/course/mycourse")
     public ResponseEntity<Object> getProfCourses(){
     	return new  ResponseEntity<Object>(courseService.getCoursesDetails(), HttpStatus.OK);
@@ -105,7 +106,8 @@ public class CourseController {
 		return ResponseHandler.responseEntity("User video progress updated successfully",
 				courseService.saveUserVideoProgress(userVideoprogress, courseid), HttpStatus.OK);
 	}
-	
+
+    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
 	@PutMapping("/v1/user/professor/course/{courseKey}/video")
     public ResponseEntity<Object> AddVideoDetails(@PathVariable Long courseKey,
     		 ProfDetBean profDetBean) throws EntityDataNotFound{

@@ -69,7 +69,7 @@ public class CourseServiceImpl implements CourseService {
 	private String bucketName;
     
     
-    @Value("${s3.video.link:false}")
+    @Value("${s3.video.link:true}")
   	private Boolean s3Link;
 
     @Override
@@ -207,8 +207,7 @@ public class CourseServiceImpl implements CourseService {
 	public List<CourseDetailsBean> getCoursesDetails() {
 		List<CourseDetailsBean> courseDetailsBeans = new ArrayList<>();
 		try {
-			Long userKey = 1l;
-			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
+			UserProfile userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
 			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
@@ -328,28 +327,28 @@ public class CourseServiceImpl implements CourseService {
 			Course courseFromDB = courseRepository.save(course);
 
 			// upload video on s3 and link
-			String url = null;
-			if (s3Link) {
-				url = uploadVideo(profDetBean.getVideoFile());
-			}
-			// save video det into postgres
-			Video video = new Video();
-			video.setCourseid(courseFromDB.getId());
-			video.setVideoduration(profDetBean.getVideoDuration());
-			video.setVideolink(url);
-			video.setVideotitle(profDetBean.getVideoTitle());
-			video.setVideoduration(profDetBean.getVideoDuration());
-			Video videoFromDB = videoRepository.save(video);
-
-			// save video dets into mongo
-			VideoDetails videoDetails = new VideoDetails();
-			videoDetails.setCourseId(courseFromDB.getId());
-			videoDetails.setCourseDescription(profDetBean.getCourseDescription());
-			videoDetails.setVideoDescription(profDetBean.getVideoDescription());
-			videoDetails.setVideoLink(url);
-			videoDetails.setVideoId(videoFromDB.getId());
-			VideoDetails VideoDetsFromMongo = videoDetailsRepository.save(videoDetails);
-			profDetResponse = mapUploadVidDets(courseFromDB, videoFromDB, VideoDetsFromMongo, userProfile,
+//			String url = null;
+//			if (s3Link) {
+//				url = uploadVideo(profDetBean.getVideoFile());
+//			}
+//			// save video det into postgres
+//			Video video = new Video();
+//			video.setCourseid(courseFromDB.getId());
+//			video.setVideoduration(profDetBean.getVideoDuration());
+//			video.setVideolink(url);
+//			video.setVideotitle(profDetBean.getVideoTitle());
+//			video.setVideoduration(profDetBean.getVideoDuration());
+//			Video videoFromDB = videoRepository.save(video);
+//
+//			// save video dets into mongo
+//			VideoDetails videoDetails = new VideoDetails();
+//			videoDetails.setCourseId(courseFromDB.getId());
+//			videoDetails.setCourseDescription(profDetBean.getCourseDescription());
+//			videoDetails.setVideoDescription(profDetBean.getVideoDescription());
+//			videoDetails.setVideoLink(url);
+//			videoDetails.setVideoId(videoFromDB.getId());
+//			VideoDetails VideoDetsFromMongo = videoDetailsRepository.save(videoDetails);
+			profDetResponse = mapUploadVidDets(courseFromDB, null, null, userProfile,
 					courseCat.getCategoryname());
 
 		} catch (Exception ex) {
@@ -367,11 +366,11 @@ public class CourseServiceImpl implements CourseService {
 		profDet.setExperience(userProfile.getExperience());
 		profDet.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
 		profDet.setUserprofilekey(userProfile.getId());
-		profDet.setVideoDuration(video.getVideoduration());
-		profDet.setVideoLink(video.getVideolink());
-		profDet.setVideoTitle(video.getVideotitle());
-		profDet.setCourseDescription(videoDets.getCourseDescription());
-		profDet.setVideoDescription(videoDets.getVideoDescription());
+//		profDet.setVideoDuration(video.getVideoduration());
+//		profDet.setVideoLink(video.getVideolink());
+//		profDet.setVideoTitle(video.getVideotitle());
+		profDet.setCourseDescription(course.getCoursedescription());
+//		profDet.setVideoDescription(videoDets.getVideoDescription());
 		return profDet;
 	}
 
