@@ -235,11 +235,7 @@ public class CourseServiceImpl implements CourseService {
 							videoBean.setVideoLink(video.getVideolink());
 							videoBean.setVideoTitle(video.getVideotitle());
 							videoBean.setVideoDuration(video.getVideoduration());
-							Optional<VideoDetails> videoDetForVideoDesc = videoDetailsRepository
-									.findByvideoId(video.getId());
-							if (videoDetForVideoDesc.isPresent()) {
-								videoBean.setVideoDescription(videoDetForVideoDesc.get().getVideoDescription());
-							}
+							videoBean.setVideoDescription(video.getVideoDescription());
 							vid.add(videoBean);
 						}
 
