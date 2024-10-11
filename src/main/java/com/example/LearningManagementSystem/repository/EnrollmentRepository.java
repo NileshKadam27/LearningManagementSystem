@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
-    List<Enrollment> findByIdAndIsactive(Long userKey, int i);
+    List<Enrollment> findByUserkeyAndIsactive(Long userKey, int isactive);
 }

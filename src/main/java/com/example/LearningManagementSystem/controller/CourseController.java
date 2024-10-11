@@ -86,10 +86,11 @@ public class CourseController {
   		}
   	}
 
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/enrolled")
-    public ResponseEntity<Object> getMyEnrolledCourses(HttpHeaders headers) throws Exception{
+    public ResponseEntity<Object> getMyEnrolledCourses() throws Exception{
         ResponseBean responseBean = new ResponseBean();
-        responseBean.setPayload(courseService.getMyEnrolledCourses(headers));
+        responseBean.setPayload(courseService.getMyEnrolledCourses());
         responseBean.setMessage("Feedback Detail for given course .");
 
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);

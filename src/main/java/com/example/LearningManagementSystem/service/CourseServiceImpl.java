@@ -262,14 +262,14 @@ public class CourseServiceImpl implements CourseService {
 		
 
 	@Override
-	public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception {
+	public List<CourseBean> getMyEnrolledCourses() throws Exception {
 
 		List<CourseBean> courseBeanList = new ArrayList<>();
 
 		try {
 			Long userKey = LearningManagementUtils.getUserId();
 			
-			List<Enrollment> enrollmentList = enrollmentRepository.findByIdAndIsactive(userKey, 1);
+			List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(userKey, 1);
 
 			if (!CollectionUtils.isEmpty(enrollmentList)) {
 
@@ -279,7 +279,7 @@ public class CourseServiceImpl implements CourseService {
 					UserProfile userProfile = userProfileRepository.findByIdAndIsactive(course.getUserprofilekey(), 1);
 					courseBean.setCourseName(course.getCoursename());
 					courseBean.setProfessorName(userProfile.getFirstname() + " " + userProfile.getLastname());
-					courseBean.setExperience(userProfile.getExperience());
+					courseBean.setCoursedescription(course.getCoursedescription());
 					courseBeanList.add(courseBean);
 				}
 
@@ -356,7 +356,6 @@ public class CourseServiceImpl implements CourseService {
 
 		try {
 			Long userKey = LearningManagementUtils.getUserId();
-//			Long userKey =1l;
 			UserProfile userProfile = userProfileRepository.findByUserkey(userKey);
 			Optional<Course> courseById = courseRepository.findById(courseId);
 			Course courseFromDB;
@@ -484,11 +483,12 @@ public class CourseServiceImpl implements CourseService {
 	@Override
 	public Enrollment saveEnrollment(Enrollment enrollment) throws Exception {
 		try {
+			Long userKey = LearningManagementUtils.getUserId();
 			if (enrollment != null) {
 				Long id = enrollment.getCourseid();
 				Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(id, 1));
 				if (course.isPresent()) {
-					enrollment.setUserkey(course.get().getUserprofilekey());
+					enrollment.setUserkey(userKey);
 					enrollment.setIsactive(1);
 				}
 			}
