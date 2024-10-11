@@ -23,7 +23,7 @@ public interface CourseService {
 
 	public ProfDetBean updateVideoDetails(Long courseKey, Long videoId,  ProfDetBean profDetBean);
 
-	public List<CourseDetailsBean> getCoursesDetails();
+	public List<CourseDetailsBean> getCoursesDetails(Long courseId);
 
     public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception;
     

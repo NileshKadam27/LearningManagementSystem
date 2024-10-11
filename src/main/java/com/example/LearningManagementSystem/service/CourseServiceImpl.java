@@ -204,11 +204,18 @@ public class CourseServiceImpl implements CourseService {
 	
 
     @Override
-	public List<CourseDetailsBean> getCoursesDetails() {
+	public List<CourseDetailsBean> getCoursesDetails(Long courseId) {
 		List<CourseDetailsBean> courseDetailsBeans = new ArrayList<>();
 		try {
 			UserProfile userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
-			List<Course> courses = courseRepository.findByUserprofilekey(userProfile.getId());
+			List<Course> courses = new ArrayList<>();
+			if(courseId!=null) {
+				courses = courseRepository.findByUserprofilekeyAndId(userProfile.getId(),courseId);
+
+			}else {
+				courses = courseRepository.findByUserprofilekey(userProfile.getId());
+			}
+					
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
 			int count = 1;

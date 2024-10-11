@@ -22,4 +22,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT e FROM Course e WHERE LOWER(e.coursename) LIKE LOWER(CONCAT('%', ?1, '%')) AND e.isactive = ?2")
     List<Course> findByCoursenameAndIsactive(String coursename, Integer isActive);
     
+    List<Course> findByUserprofilekeyAndId(Long userProfKey, Long id);
+    
 }

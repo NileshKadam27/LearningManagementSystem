@@ -11,6 +11,7 @@ import com.example.LearningManagementSystem.utils.ResponseHandler;
 
 import java.util.List;
 
+import org.aspectj.lang.annotation.RequiredTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -70,9 +71,9 @@ public class CourseController {
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
-    @GetMapping("/v1/user/professor/course/mycourse")
-    public ResponseEntity<Object> getAllCourses(){
-    	return new  ResponseEntity<Object>(courseService.getCoursesDetails(), HttpStatus.OK);
+    @GetMapping("/v1/user/professor/course/mycourse/{courseId}")
+    public ResponseEntity<Object> getAllCourses(@PathVariable(required = false) Long courseId ){
+    	return new  ResponseEntity<Object>(courseService.getCoursesDetails(courseId), HttpStatus.OK);
     }
     
     @GetMapping("/v1/course/{coursename}")
