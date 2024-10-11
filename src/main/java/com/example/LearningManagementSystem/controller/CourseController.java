@@ -123,5 +123,13 @@ public class CourseController {
         responseBean.setMessage("All Category Details.");
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
+
+    @GetMapping("/v1/course")
+    public ResponseEntity<Object> getCourseById(@RequestParam Long courseId) throws Exception {
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.getCourseById(courseId));
+        responseBean.setMessage("Get Course By Id.");
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
+    }
     
 }

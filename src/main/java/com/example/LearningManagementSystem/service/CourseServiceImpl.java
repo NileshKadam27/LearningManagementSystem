@@ -602,6 +602,27 @@ public class CourseServiceImpl implements CourseService {
 
 	}
 
+	@Override
+	public CourseBean getCourseById(Long courseId) throws Exception {
+		CourseBean courseBean= new CourseBean();
+		try{
+			Course course = courseRepository.findByIdAndIsactive(courseId, 1);
+			if(course!=null){
+				courseBean.setCourseName(course.getCoursename());
+				courseBean.setCoursedescription(course.getCoursedescription());
+				courseBean.setCourseImageLink(course.getCourseimagelink());
+				UserProfile userProfile = userProfileRepository.findByIdAndIsactive(course.getUserprofilekey(),1);
+				if(userProfile!=null){
+					courseBean.setProfessorName(userProfile.getFirstname()+" "+userProfile.getLastname());
+				}
+			}
+
+		}catch (Exception e) {
+			throw new LmsException("Exception occurred while getCourseById()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return  courseBean;
+	}
+
 }
 
 

@@ -37,4 +37,6 @@ public interface CourseService {
     public ProfDetBean addVideoDetails(Long courseKey, ProfDetBean profDetBean) throws EntityDataNotFound;
 
     public  List<CourseCat> getAllCourseCategory() throws Exception;
+
+    public CourseBean getCourseById(Long courseId) throws Exception;
 }
