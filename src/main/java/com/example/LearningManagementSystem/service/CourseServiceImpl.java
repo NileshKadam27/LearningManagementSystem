@@ -268,7 +268,7 @@ public class CourseServiceImpl implements CourseService {
 		
 
 	@Override
-	public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception {
+	public List<CourseBean> getMyEnrolledCourses() throws Exception {
 
 		List<CourseBean> courseBeanList = new ArrayList<>();
 

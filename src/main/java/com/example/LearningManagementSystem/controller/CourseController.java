@@ -72,7 +72,7 @@ public class CourseController {
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
-    @GetMapping("/v1/user/professor/course/mycourse/{courseId}")
+    @GetMapping("/v1/user/professor/course/mycourse")
     public ResponseEntity<Object> getAllCourses(@RequestParam(required = false) Long courseId ){
     	return new  ResponseEntity<Object>(courseService.getCoursesDetails(courseId), HttpStatus.OK);
     }
