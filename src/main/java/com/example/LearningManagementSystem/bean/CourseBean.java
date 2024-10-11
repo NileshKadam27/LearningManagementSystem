@@ -22,8 +22,8 @@ public class CourseBean {
 	private String coursedescription;
 	
 	private List<VideoBean> videoBean;
-	
-	
+
+    private String courseImageLink;
 
     public Long getCourseId() {
         return courseId;
@@ -96,6 +96,11 @@ public class CourseBean {
 	public void setVideoBean(List<VideoBean> videoBean) {
 		this.videoBean = videoBean;
 	}
-    
-    
+
+    public String getCourseImageLink() {
+        return courseImageLink;
+    }
+    public void setCourseImageLink(String courseImageLink) {
+        this.courseImageLink = courseImageLink;
+    }
 }

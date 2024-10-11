@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "courses")
@@ -30,6 +31,8 @@ public class Course {
 	
 	@UpdateTimestamp
 	private LocalDateTime updateddt;
+
+	private String courseimagelink;
 
 	public Long getId() {
 		return id;
@@ -95,6 +98,11 @@ public class Course {
 		this.updateddt = updateddt;
 	}
 
-	
+	public String getCourseimagelink() {
+		return courseimagelink;
+	}
+	public void setCourseimagelink(String courseimagelink) {
+		this.courseimagelink = courseimagelink;
+	}
 	
 }
