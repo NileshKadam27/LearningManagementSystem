@@ -124,7 +124,7 @@ public class CourseController {
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
 
-    @GetMapping("/v1/course")
+    @GetMapping("/v1/course/byid")
     public ResponseEntity<Object> getCourseById(@RequestParam Long courseId) throws Exception {
         ResponseBean responseBean = new ResponseBean();
         responseBean.setPayload(courseService.getCourseById(courseId));
