@@ -33,7 +33,6 @@ public class CourseController {
     @Autowired
     CourseService courseService;
 
-    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/details")
     public ResponseEntity<Object> getAllCourseDetails() throws Exception {
         ResponseBean responseBean = new ResponseBean();
