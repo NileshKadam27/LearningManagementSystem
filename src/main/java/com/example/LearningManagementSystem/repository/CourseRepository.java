@@ -24,4 +24,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     
     List<Course> findByUserprofilekeyAndId(Long userProfKey, Long id);
     
+    
+    
 }

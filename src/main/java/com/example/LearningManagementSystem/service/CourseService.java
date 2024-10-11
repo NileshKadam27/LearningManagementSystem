@@ -25,7 +25,7 @@ public interface CourseService {
 
 	public List<CourseDetailsBean> getCoursesDetails(Long courseId);
 
-    public List<CourseBean> getMyEnrolledCourses(HttpHeaders headers) throws Exception;
+    public List<CourseBean> getMyEnrolledCourses() throws Exception;
     
     public List<CourseBean> getCourseDetailsByName(String coursename);
     

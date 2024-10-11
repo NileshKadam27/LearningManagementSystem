@@ -215,7 +215,6 @@ public class CourseServiceImpl implements CourseService {
 			}else {
 				courses = courseRepository.findByUserprofilekey(userProfile.getId());
 			}
-					
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
 			int count = 1;

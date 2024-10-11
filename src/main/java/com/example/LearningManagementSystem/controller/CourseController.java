@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -72,7 +73,7 @@ public class CourseController {
     }
     @PreAuthorize("hasAnyRole('INSTRUCTOR')")
     @GetMapping("/v1/user/professor/course/mycourse/{courseId}")
-    public ResponseEntity<Object> getAllCourses(@PathVariable(required = false) Long courseId ){
+    public ResponseEntity<Object> getAllCourses(@RequestParam(required = false) Long courseId ){
     	return new  ResponseEntity<Object>(courseService.getCoursesDetails(courseId), HttpStatus.OK);
     }
     
@@ -87,10 +88,11 @@ public class CourseController {
   		}
   	}
 
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
     @GetMapping("/v1/course/enrolled")
-    public ResponseEntity<Object> getMyEnrolledCourses(HttpHeaders headers) throws Exception{
+    public ResponseEntity<Object> getMyEnrolledCourses() throws Exception{
         ResponseBean responseBean = new ResponseBean();
-        responseBean.setPayload(courseService.getMyEnrolledCourses(headers));
+        responseBean.setPayload(courseService.getMyEnrolledCourses());
         responseBean.setMessage("Feedback Detail for given course .");
 
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
