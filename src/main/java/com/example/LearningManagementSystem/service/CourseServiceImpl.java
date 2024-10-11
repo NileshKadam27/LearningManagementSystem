@@ -230,6 +230,7 @@ public class CourseServiceImpl implements CourseService {
 
 						List<Video> videos = videoRepository.findByCourseid(course.getId());
 						List<VideoBean> vid = new ArrayList<>();
+						if(!videos.isEmpty()) {
 						for (Video video : videos) {
 							VideoBean videoBean = new VideoBean();
 							videoBean.setVideoId(video.getId());
@@ -239,6 +240,7 @@ public class CourseServiceImpl implements CourseService {
 							videoBean.setVideoDescription(video.getVideoDescription());
 							vid.add(videoBean);
 						}
+					    }
 
 						courseBean.setVideoBean(vid);
 						
