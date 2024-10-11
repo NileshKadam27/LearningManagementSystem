@@ -1,6 +1,7 @@
 package com.example.LearningManagementSystem.service;
 
 import com.example.LearningManagementSystem.bean.CourseBean;
+import com.example.LearningManagementSystem.bean.CourseCat;
 import com.example.LearningManagementSystem.bean.CourseDetailsBean;
 import com.example.LearningManagementSystem.bean.ProfDetBean;
 import com.example.LearningManagementSystem.entity.Enrollment;
@@ -34,4 +35,6 @@ public interface CourseService {
     public UserVideoprogress saveUserVideoProgress(UserVideoprogress userVideoprogress, Long courseid) throws Exception;
     
     public ProfDetBean addVideoDetails(Long courseKey, ProfDetBean profDetBean) throws EntityDataNotFound;
+
+    public  List<CourseCat> getAllCourseCategory() throws Exception;
 }

@@ -50,7 +50,7 @@ public class SecurityConfig {
                 //.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.disable())
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(registry -> {
-                   registry.requestMatchers("/home", "/v1/user/register", "/v1/user/login","/v1/course/details").permitAll();
+                   registry.requestMatchers("/home", "/v1/user/register", "/v1/user/login","/v1/course/details","/v1/course/category").permitAll();
 //                   registry.requestMatchers("/v1/user/professor/**").hasRole("INSTRUCTOR");
                    registry.requestMatchers("/v1/**").authenticated();
                 })

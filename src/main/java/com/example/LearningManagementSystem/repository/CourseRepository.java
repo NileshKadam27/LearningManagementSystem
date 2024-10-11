@@ -23,7 +23,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByCoursenameAndIsactive(String coursename, Integer isActive);
     
     List<Course> findByUserprofilekeyAndId(Long userProfKey, Long id);
-    
-    
-    
+
+
+    List<Course> findByCoursecategorykeyAndIsactive(Long id, int i);
 }

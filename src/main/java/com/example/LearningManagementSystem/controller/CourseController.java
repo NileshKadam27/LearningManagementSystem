@@ -115,6 +115,13 @@ public class CourseController {
     		 ProfDetBean profDetBean) throws EntityDataNotFound{
         return ResponseHandler.responseEntity("update Video Details",courseService.addVideoDetails(courseKey,profDetBean), HttpStatus.OK);
     }
-      
+
+    @GetMapping("/v1/course/category")
+    public ResponseEntity<Object> getAllCourseCategory() throws Exception {
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.getAllCourseCategory());
+        responseBean.setMessage("All Category Details.");
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
+    }
     
 }
