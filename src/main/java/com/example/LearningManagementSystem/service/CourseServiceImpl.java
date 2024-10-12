@@ -369,8 +369,10 @@ public class CourseServiceImpl implements CourseService {
 				video.get().setVideoDescription(profDetails.getVideoDescription());
 				video.get().setVideoduration(profDetails.getVideoDuration());
 				if (s3Link) {
+					if(profDetails.getVideoFile()!=null) {
 					String url = uploadVideo(profDetails.getVideoFile());
 					video.get().setVideolink(url);
+					}
 				}
 				videoFromDB = videoRepository.save(video.get());
 			} else {
@@ -425,11 +427,17 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	private String uploadVideo(MultipartFile file) {
-		String fileName = file.getOriginalFilename();
+		String fileName=null;
+		if(file!=null) {
+			fileName = file.getOriginalFilename();
+		}
+		
 		try {
-			s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName)
-					.contentType(file.getContentType()).build(), RequestBody.fromBytes(file.getBytes()));
-		} catch (Exception e) {
+			if(fileName!=null) {
+				s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName)
+						.contentType(file.getContentType()).build(), RequestBody.fromBytes(file.getBytes()));
+			} 
+		}catch (Exception e) {
 			e.getMessage();
 		}
 
@@ -673,7 +681,11 @@ public class CourseServiceImpl implements CourseService {
 		return  courseBeanList;
 	}
 
-}
+	
+		
+	}
+
+
 
 
 
