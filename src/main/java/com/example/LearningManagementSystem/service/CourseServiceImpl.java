@@ -495,7 +495,7 @@ public class CourseServiceImpl implements CourseService {
 				Long id = enrollment.getCourseid();
 				Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(id, 1));
 				if (course.isPresent()) {
-					enrollment.setUserkey(course.get().getUserprofilekey());
+					enrollment.setUserkey(LearningManagementUtils.getUserId());
 					enrollment.setIsactive(1);
 				}
 			}
