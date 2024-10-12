@@ -668,9 +668,36 @@ public class CourseServiceImpl implements CourseService {
 				}
 			}
 		}catch (Exception e) {
-			throw new LmsException("Exception occurred while getCourseById()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new LmsException("Exception occurred while getCourses()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return  courseBeanList;
+	}
+
+	@Override
+	public List<Dashboard> getDashboardDetails() throws Exception {
+		List<Dashboard> dashboardList = new ArrayList<>();
+		try{
+			Long userId = LearningManagementUtils.getUserId();
+
+			UserProfile userProfile = userProfileRepository.findByUserkey(userId);
+
+			List<Course> courseList = courseRepository.findByUserprofilekey(userProfile.getId());
+			if(!CollectionUtils.isEmpty(courseList)){
+				for(Course course:courseList){
+					List<Enrollment> enrollmentList = enrollmentRepository.findByCourseidAndIsactive(course.getId(),1);
+						Dashboard dashboard = new Dashboard();
+						dashboard.setCourseName(course.getCoursename());
+						dashboard.setNumberStudentEnrolled(!enrollmentList.isEmpty()?enrollmentList.size():0);
+						dashboardList.add(dashboard);
+
+				}
+			}
+
+		}catch (Exception e){
+			throw new LmsException("Exception occurred while getDashboardDetails()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
+
+		}
+		return  dashboardList;
 	}
 
 }

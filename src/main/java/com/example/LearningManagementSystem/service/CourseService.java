@@ -1,9 +1,6 @@
 package com.example.LearningManagementSystem.service;
 
-import com.example.LearningManagementSystem.bean.CourseBean;
-import com.example.LearningManagementSystem.bean.CourseCat;
-import com.example.LearningManagementSystem.bean.CourseDetailsBean;
-import com.example.LearningManagementSystem.bean.ProfDetBean;
+import com.example.LearningManagementSystem.bean.*;
 import com.example.LearningManagementSystem.entity.Enrollment;
 import com.example.LearningManagementSystem.entity.UserVideoprogress;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
@@ -41,4 +38,6 @@ public interface CourseService {
     public CourseBean getCourseById(Long courseId) throws Exception;
 
     public List<CourseBean> getCourses() throws Exception;
+
+    public List<Dashboard> getDashboardDetails() throws Exception;
 }

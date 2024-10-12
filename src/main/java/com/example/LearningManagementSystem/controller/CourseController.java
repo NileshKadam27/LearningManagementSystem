@@ -144,5 +144,14 @@ public class CourseController {
         responseBean.setMessage("Get All Courses");
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
+    @GetMapping("/v1/course/dashboard/details")
+    public ResponseEntity<Object> getDashboardDetails() throws Exception {
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.getDashboardDetails());
+        responseBean.setMessage("Dashboard Detail");
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
+    }
     
 }
