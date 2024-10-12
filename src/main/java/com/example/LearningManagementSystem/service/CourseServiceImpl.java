@@ -200,7 +200,7 @@ public class CourseServiceImpl implements CourseService {
 		try {
 			UserProfile userProfile = null;
 			String role = LearningManagementUtils.getUserRole();
-			if(role!=null && role.equals("ROLE_INSTRUCTOR")) {
+			if(role!=null && role.equals("INSTRUCTOR")) {
 				userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
 				if (courseId != null) {
 					courses = courseRepository.findByUserprofilekeyAndId(userProfile.getId(), courseId);
@@ -208,7 +208,7 @@ public class CourseServiceImpl implements CourseService {
 				} else {
 					courses = courseRepository.findByUserprofilekey(userProfile.getId());
 				}
-			}else if(role!=null && role.equals("ROLE_STUDENT")){
+			}else if(role!=null && role.equals("STUDENT")){
 				List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(LearningManagementUtils.getUserId(),1);
 				if(!CollectionUtils.isEmpty(enrollmentList)){
 					for(Enrollment enrollment :enrollmentList){
@@ -644,7 +644,7 @@ public class CourseServiceImpl implements CourseService {
 		try {
 			String role = LearningManagementUtils.getUserRole();
 			Long userId = LearningManagementUtils.getUserId();
-			if(role!=null && role.equals("ROLE_STUDENT")){
+			if(role!=null && role.equals("STUDENT")){
 				List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(userId,1);
 				if(!CollectionUtils.isEmpty(enrollmentList)){
 					for(Enrollment enrollment :enrollmentList){
@@ -663,7 +663,7 @@ public class CourseServiceImpl implements CourseService {
 						courseBeanList.add(courseBean);
 					}
 				}
-			}else if(role!=null && role.equals("ROLE_INSTRUCTOR")){
+			}else if(role!=null && role.equals("INSTRUCTOR")){
 				UserProfile userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
 				List<Course> courseList = courseRepository.findByUserprofilekey(userProfile.getUserkey());
 				if(!CollectionUtils.isEmpty(courseList)){
