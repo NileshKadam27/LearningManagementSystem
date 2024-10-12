@@ -218,7 +218,13 @@ public class CourseServiceImpl implements CourseService {
 				if (category.isPresent()) {
 					courseDetailsBean.setId(count);
 					courseDetailsBean.setCourseCategory(category.get().getCategoryname());
-					List<Course> coursess = courseRepository.findByCoursecategorykey(value);
+					List<Course> coursess=new ArrayList<>();
+					if(courseId!=null) {
+						coursess=courses;
+					}else {
+						coursess = courseRepository.findByCoursecategorykey(value);	
+					}
+					 
 					courseDetailsBean.setCourseDetailList(coursess.stream().map(course -> {
 						CourseBean courseBean = new CourseBean();
 						courseBean.setCourseId(course.getId());
@@ -347,7 +353,7 @@ public class CourseServiceImpl implements CourseService {
 
 	@Override
 	public ProfDetBean updateVideoDetails(Long courseId, Long videoId, ProfDetBean profDetails) {
-		ProfDetBean ProfDetails = new ProfDetBean();
+		ProfDetBean profDetailsResponse = new ProfDetBean();
 
 		try {
 			Long userKey = LearningManagementUtils.getUserId();
@@ -356,24 +362,6 @@ public class CourseServiceImpl implements CourseService {
 			Optional<Course> courseById = courseRepository.findById(courseId);
 			Course courseFromDB;
 			CourseCategory courseCat = null;
-			if (courseById.isPresent()) {
-				Set<String> categories = courseCategoryRepository.findAll().stream().map(cat -> cat.getCategoryname())
-						.collect(Collectors.toSet());
-
-				if ((categories.contains(profDetails.getCourseCategory()))
-						&& profDetails.getCourseCategory() != null) {
-					courseCat = courseCategoryRepository.findByCategoryname(profDetails.getCourseCategory());
-				} else {
-					CourseCategory courseCategory = new CourseCategory();
-					courseCategory.setCategoryname(profDetails.getCourseCategory());
-					courseCat = courseCategoryRepository.save(courseCategory);
-					courseById.get().setCoursecategorykey(courseCat.getId());
-				}
-				courseFromDB = updateCourseDetails(courseById.get(), userProfile, profDetails);
-			} else {
-				throw new EntityDataNotFound("Course Details not found");
-			}
-
 			Optional<Video> video = videoRepository.findById(videoId);
 			Video videoFromDB;
 			if (video.isPresent()) {
@@ -388,15 +376,23 @@ public class CourseServiceImpl implements CourseService {
 			} else {
 				throw new EntityDataNotFound("Video Details not found");
 			}
+  
+			 if(videoFromDB!=null) {
+				 profDetailsResponse.setVideoId(videoFromDB.getId());
+				 profDetailsResponse.setVideoTitle(videoFromDB.getVideotitle());
+				 profDetailsResponse.setVideoDescription(videoFromDB.getVideoDescription());
+				 profDetailsResponse.setVideoDuration(videoFromDB.getVideoduration());
+				 profDetailsResponse.setVideoLink(videoFromDB.getVideolink());
+				 
+				 
+			 }
 
-			ProfDetails = mapUploadVidDets(courseFromDB, videoFromDB, null, userProfile,
-					courseCat.getCategoryname());
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
-		return ProfDetails;
+		return profDetailsResponse;
 	}
 
 
