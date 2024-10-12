@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface CourseService {
 
-    public List<CourseDetailsBean> getAllCourseDetails() throws LmsException;
+    public List<CourseBean> getAllCourseDetails() throws LmsException;
 
     public CourseDetailsBean getCourseDetailsByCategory(Long catid) throws Exception;
 
