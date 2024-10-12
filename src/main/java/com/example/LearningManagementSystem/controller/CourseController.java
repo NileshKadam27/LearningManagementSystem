@@ -100,7 +100,10 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('STUDENT')")
     @PostMapping("/v1/user/enroll/course")
 	public ResponseEntity<Object> enrollCourse(@RequestBody Enrollment enrollment) throws Exception {
-		return ResponseHandler.responseEntity("Course Enrolled Successfully", courseService.saveEnrollment(enrollment), HttpStatus.OK);
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.saveEnrollment(enrollment));
+        responseBean.setMessage("Course Enrolled Successfully");
+		return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
 	}
     
 	@PostMapping("/v1/user/course/{courseid}")

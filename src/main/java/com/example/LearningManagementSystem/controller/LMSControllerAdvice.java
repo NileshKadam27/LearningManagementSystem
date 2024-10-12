@@ -2,6 +2,7 @@ package com.example.LearningManagementSystem.controller;
 
 import com.example.LearningManagementSystem.bean.ErrorBean;
 import com.example.LearningManagementSystem.bean.ResponseBean;
+import com.example.LearningManagementSystem.exception.CourseAlreadyExist;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.exception.LmsException;
 import com.example.LearningManagementSystem.exception.UserNameAlreadyExist;
@@ -73,4 +74,13 @@ public class LMSControllerAdvice {
         return new ResponseEntity(responseBean, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(CourseAlreadyExist.class)
+    public ResponseEntity<Object> handleCourseAlreadyExistException(Exception e){
+        ErrorBean errorBean = new ErrorBean();
+        errorBean.setErrorCode("LMS_010");
+        errorBean.setErrorMessage(e.getMessage());
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setErrorBean(errorBean);
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.NOT_ACCEPTABLE);
+    }
 }

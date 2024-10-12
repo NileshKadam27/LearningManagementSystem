@@ -3,6 +3,7 @@ package com.example.LearningManagementSystem.service;
 import com.example.LearningManagementSystem.bean.*;
 import com.example.LearningManagementSystem.entity.*;
 import com.example.LearningManagementSystem.entity.Course;
+import com.example.LearningManagementSystem.exception.CourseAlreadyExist;
 import com.example.LearningManagementSystem.exception.EntityDataNotFound;
 import com.example.LearningManagementSystem.exception.LmsException;
 import com.example.LearningManagementSystem.repository.*;
@@ -491,6 +492,10 @@ public class CourseServiceImpl implements CourseService {
 	@Override
 	public Enrollment saveEnrollment(Enrollment enrollment) throws Exception {
 		try {
+			Enrollment enrollmentExist = enrollmentRepository.findByCourseidAndUserkeyAndIsactive(enrollment.getCourseid(),LearningManagementUtils.getUserId(),1);
+			if(enrollmentExist!=null){
+				throw new CourseAlreadyExist("You have already enrolled to this course");
+			}
 			if (enrollment != null) {
 				Long id = enrollment.getCourseid();
 				Optional<Course> course = Optional.ofNullable(courseRepository.findByIdAndIsactive(id, 1));
@@ -500,7 +505,9 @@ public class CourseServiceImpl implements CourseService {
 				}
 			}
 			return enrollmentRepository.save(enrollment);
-		} catch (Exception e) {
+		} catch (LmsException ex){
+			throw ex;
+		}catch (Exception e) {
 			throw new LmsException("An unexpected error occurred, while enrolling into course", "LMS006",
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
