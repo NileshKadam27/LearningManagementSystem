@@ -189,14 +189,22 @@ public class CourseServiceImpl implements CourseService {
 					courses = courseRepository.findByUserprofilekey(userProfile.getId());
 				}
 			}else if(role!=null && role.equals("STUDENT")){
-				List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(LearningManagementUtils.getUserId(),1);
-				if(!CollectionUtils.isEmpty(enrollmentList)){
-					for(Enrollment enrollment :enrollmentList){
-						Course course = courseRepository.findByIdAndIsactive(enrollment.getCourseid(),1);
-						courses.add(course);
-//						userProfile= userProfileRepository.findById(course.getUserprofilekey()).get();
+				List<Enrollment> enrollmentList = new ArrayList<>();
+				if(courseId!=null){
+					Enrollment enrollment = enrollmentRepository.findByCourseidAndUserkeyAndIsactive(courseId,LearningManagementUtils.getUserId(),1);
+					if(enrollment!=null){
+						enrollmentList.add(enrollment);
 					}
+				}else {
+					enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(LearningManagementUtils.getUserId(), 1);
 				}
+					if (!CollectionUtils.isEmpty(enrollmentList)) {
+						for (Enrollment enrollment : enrollmentList) {
+							Course course = courseRepository.findByIdAndIsactive(enrollment.getCourseid(), 1);
+							courses.add(course);
+//						userProfile= userProfileRepository.findById(course.getUserprofilekey()).get();
+						}
+					}
 
 			}
 
