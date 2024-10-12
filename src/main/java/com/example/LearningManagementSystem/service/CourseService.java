@@ -39,4 +39,6 @@ public interface CourseService {
     public  List<CourseCat> getAllCourseCategory() throws Exception;
 
     public CourseBean getCourseById(Long courseId) throws Exception;
+
+    public List<CourseBean> getCourses() throws Exception;
 }

@@ -196,15 +196,30 @@ public class CourseServiceImpl implements CourseService {
 	@Override
 	public List<CourseDetailsBean> getCoursesDetails(Long courseId) {
 		List<CourseDetailsBean> courseDetailsBeans = new ArrayList<>();
+		List<Course> courses = new ArrayList<>();
 		try {
-			UserProfile userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
-			List<Course> courses = new ArrayList<>();
-			if (courseId != null) {
-				courses = courseRepository.findByUserprofilekeyAndId(userProfile.getId(), courseId);
+			UserProfile userProfile = null;
+			String role = LearningManagementUtils.getUserRole();
+			if(role!=null && role.equals("ROLE_INSTRUCTOR")) {
+				userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
+				if (courseId != null) {
+					courses = courseRepository.findByUserprofilekeyAndId(userProfile.getId(), courseId);
 
-			} else {
-				courses = courseRepository.findByUserprofilekey(userProfile.getId());
+				} else {
+					courses = courseRepository.findByUserprofilekey(userProfile.getId());
+				}
+			}else if(role!=null && role.equals("ROLE_STUDENT")){
+				List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(LearningManagementUtils.getUserId(),1);
+				if(!CollectionUtils.isEmpty(enrollmentList)){
+					for(Enrollment enrollment :enrollmentList){
+						Course course = courseRepository.findByIdAndIsactive(enrollment.getCourseid(),1);
+						courses.add(course);
+//						userProfile= userProfileRepository.findById(course.getUserprofilekey()).get();
+					}
+				}
+
 			}
+
 			Set<Long> categoryId = courses.stream().map(course -> course.getCoursecategorykey())
 					.collect(Collectors.toSet());
 			int count = 1;
@@ -220,7 +235,7 @@ public class CourseServiceImpl implements CourseService {
 						CourseBean courseBean = new CourseBean();
 						courseBean.setCourseId(course.getId());
 						courseBean.setCourseName(course.getCoursename());
-						courseBean.setExperience(userProfile.getExperience());
+//						courseBean.setExperience(userProfile.getExperience());
 						courseBean.setCoursedescription(course.getCoursedescription());
 						courseBean.setCourseImageLink(course.getCourseimagelink());
 						List<Video> videos = videoRepository.findByCourseid(course.getId());
@@ -623,7 +638,53 @@ public class CourseServiceImpl implements CourseService {
 		return  courseBean;
 	}
 
+	@Override
+	public List<CourseBean> getCourses() throws Exception {
+		List<CourseBean> courseBeanList = new ArrayList<>();
+		try {
+			String role = LearningManagementUtils.getUserRole();
+			Long userId = LearningManagementUtils.getUserId();
+			if(role!=null && role.equals("ROLE_STUDENT")){
+				List<Enrollment> enrollmentList = enrollmentRepository.findByUserkeyAndIsactive(userId,1);
+				if(!CollectionUtils.isEmpty(enrollmentList)){
+					for(Enrollment enrollment :enrollmentList){
+						CourseBean courseBean = new CourseBean();
+						Course course = courseRepository.findByIdAndIsactive(enrollment.getCourseid(),1);
+						if(course!=null){
+							courseBean.setCourseImageLink(course.getCourseimagelink());
+							courseBean.setCourseName(course.getCoursename());
+							courseBean.setCoursedescription(course.getCoursedescription());
+							courseBean.setCourseId(course.getId());
+							UserProfile userProfile = userProfileRepository.findByIdAndIsactive(course.getUserprofilekey(),1);
+							if(userProfile!=null){
+								courseBean.setProfessorName(userProfile.getFirstname()+" "+userProfile.getLastname());
+							}
+						}
+						courseBeanList.add(courseBean);
+					}
+				}
+			}else if(role!=null && role.equals("ROLE_INSTRUCTOR")){
+				UserProfile userProfile = userProfileRepository.findByUserkey(LearningManagementUtils.getUserId());
+				List<Course> courseList = courseRepository.findByUserprofilekey(userProfile.getUserkey());
+				if(!CollectionUtils.isEmpty(courseList)){
+					for(Course course:courseList){
+						CourseBean courseBean =new CourseBean();
+						courseBean.setCourseImageLink(course.getCourseimagelink());
+						courseBean.setCourseName(course.getCoursename());
+						courseBean.setCoursedescription(course.getCoursedescription());
+						courseBean.setCourseId(course.getId());
+						courseBeanList.add(courseBean);
+					}
+				}
+			}
+		}catch (Exception e) {
+			throw new LmsException("Exception occurred while getCourseById()", "LMS_002", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return  courseBeanList;
+	}
+
 }
+
 
 
 

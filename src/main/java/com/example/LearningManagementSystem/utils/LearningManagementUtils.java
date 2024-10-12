@@ -14,4 +14,13 @@ public class LearningManagementUtils {
         }
         return null;
     }
+
+    public static String getUserRole(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication!=null){
+            CustomerUserDetails userDetails = (CustomerUserDetails) authentication.getPrincipal();
+            return  userDetails.getRole();
+        }
+        return null;
+    }
 }

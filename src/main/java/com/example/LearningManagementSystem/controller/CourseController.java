@@ -70,7 +70,7 @@ public class CourseController {
     		 ProfDetBean profDetBean){
         return ResponseHandler.responseEntity("update Video Details",courseService.updateVideoDetails(courseKey,videoId,profDetBean), HttpStatus.OK);
     }
-    @PreAuthorize("hasAnyRole('INSTRUCTOR')")
+    @PreAuthorize("hasAnyRole('INSTRUCTOR','STUDENT')")
     @GetMapping("/v1/user/professor/course/mycourse")
     public ResponseEntity<Object> getAllCourses(@RequestParam(required = false) Long courseId ){
     	return new  ResponseEntity<Object>(courseService.getCoursesDetails(courseId), HttpStatus.OK);
@@ -130,6 +130,15 @@ public class CourseController {
         ResponseBean responseBean = new ResponseBean();
         responseBean.setPayload(courseService.getCourseById(courseId));
         responseBean.setMessage("Get Course By Id.");
+        return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('STUDENT','INSTRUCTOR')")
+    @GetMapping("/v1/course/getcourses")
+    public ResponseEntity<Object> getCourses() throws Exception {
+        ResponseBean responseBean = new ResponseBean();
+        responseBean.setPayload(courseService.getCourses());
+        responseBean.setMessage("Get All Courses");
         return ResponseHandler.responseEntity(responseBean, HttpStatus.OK);
     }
     
